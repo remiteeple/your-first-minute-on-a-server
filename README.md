@@ -1,5 +1,7 @@
 # Your First Minute On A Server
 
+<p align="center">
+
 ```
      :::   :::    ::::::::::      :::   :::        ::::::::          :::          ::::::::
     :+:   :+:    :+:            :+:+: :+:+:      :+:    :+:       :+: :+:       :+:    :+:
@@ -10,9 +12,13 @@
   ###   ### ###       ### ###       ### ###  ########  ### ###     ### ###  ########
 ```
 
+</p>
+
 **Your First Minute On A Server** _(YFMOAS)_
 
 Hi! :wave: My name is [Remi Teeple](https://remi.works) and this guide is aimed to provide a consistent standard for server initialization and rollout. This guide was created from the perspective of a layman as security and hosting is not necessarily my forte. As such I wanted to consolidate my ideal server creation for my own reference but I figured I should share my methodology and ideology via GitHub for anyone to use. Originally inspired by an [old article](https://plusbryan.com/my-first-5-minutes-on-a-server-or-essential-security-for-linux-servers) my hope is to keep the information in said article relevant in a modern 2020 eco-system while adding additional security.
+
+This entire guide has been tested on Ubuntu 20.08 (&ARM).
 
 If you aren't much for reading then please use [the included script]() to automate this entire guide.
 
@@ -31,13 +37,14 @@ If you aren't much for reading then please use [the included script]() to automa
   - [Updating and Upgrading](#updating-and-upgrading)
   - [Creating & Using SSH Authentication Keys](#creating--using-ssh-authentication-keys)
   - [Securing SSH](#securing-ssh)
-  - [Firewall Setup (**UFW**) (TODO)](#firewall-setup-ufw-todo)
+  - [Firewall Setup (**UFW**)](#firewall-setup-ufw)
   - [Setting Timezone](#setting-timezone)
   - [Securing Sudo (TODO)](#securing-sudo-todo)
   - [Setting Security Limits](#setting-security-limits)
   - [Securing Shared Memory](#securing-shared-memory)
   - [Disabling Root User](#disabling-root-user)
   - [Disabling IPv6](#disabling-ipv6)
+  - [Setting Up Breach Detector (TODO: Test Me) http://bookofzeus.com/harden-ubuntu/software/install-breach-detector/](#setting-up-breach-detector-todo-test-me-httpbookofzeuscomharden-ubuntusoftwareinstall-breach-detector)
 - [Application Installation & Configuration :wrench:](#application-installation--configuration-wrench)
   - [Update Automation (**unattended-upgrades**)](#update-automation-unattended-upgrades)
   - [Checking for Rootkits (**chkrootkit** & **rkhunter**)](#checking-for-rootkits-chkrootkit--rkhunter)
@@ -114,7 +121,12 @@ Once the system is alive and well it's important to ensure that we are up to dat
 To update our package lists and upgrade any outdated packages we run the following:
 
 ```bash
-sudo apt-get update && sudo apt-get upgrade
+sudo apt-get update && sudo apt-get full-upgrade -y
+```
+
+Optionally we can clean up after we update:
+```bash
+sudo apt-get autoremove -y && sudo apt-get autoclean -y
 ```
 
 ## Creating & Using SSH Authentication Keys
@@ -145,7 +157,7 @@ Enter passphrase (empty for no passphrase):
 Enter same passphrase again:
 ```
 
-> **Note:** Though _technically_ optional, a **secure passphrase** is highly recommended.
+> **NOTE:** Though _technically_ optional, a **secure passphrase** is highly recommended.
 
 Your key pair should now generate and display and output similar to the following:
 
@@ -201,11 +213,11 @@ Add the following line to the bottom of the file:
 PasswordAuthentication no # Disables password authentication (this enables SSH key auth)
 ```
 
-> **Note**: Do not lose your SSH public key as it will be your only way to login to the server remotely. Physical logins will still be available.
+> **NOTE**: Do not lose your SSH public key as it will be your only way to login to the server remotely. Physical logins will still be available.
 
 ## Securing SSH
 
-The default SSH port _(22)_ is an easy target for most bad actors. To help mitigate the amount of hits you might receive against a public facing SSH port, you can change it to a non-standard port. Ensure that the port that you change SSH to is not already in use, that is typically a port **above 1024**... Here [is a list](https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Well-known_ports) of ports to avoid.
+The default SSH port _(22)_ is an easy target for most bad actors. To help mitigate the amount of hits you might receive against a public facing SSH port, you can change it to a non-standard port. Ensure that the port that you change SSH to is not already in use, that is typically a port **above 1024**... Here [is a list](https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Well-known_ports) of ports to avoid. Ultimately, changing your SSH port will stop only a few scanners from hitting the port so it is an optional but recommended step.
 
 Open `/etc/ssh/sshd_config`:
 
@@ -230,11 +242,42 @@ After we're done making changes the SSH service must be restarted to take said c
 sudo service ssh restart
 ```
 
-## Firewall Setup (**UFW**) (TODO)
+> **NOTE**: If you changed the default SSH port then any mention of the alias "ssh" will need to be replaced with the specific port you set. i.e. `sudo ufw limit in ssh` should now be `sudo ufw limit in <YOUR_PORT>`.
 
-**UFW** _(Uncomplicated Firewall)_ is a simple but powerful tool to secure a Linux Server.
+## Firewall Setup (**UFW**)
 
-Before anything else. We must add SSH to the allow list to prevent your connection dropping
+**UFW** _(Uncomplicated Firewall)_ is a simple but powerful tool to secure a Linux Server. The firewall configuration is largely dependant on the purpose of your server. This guide will cover some essential policies to ensure a good baseline for security, but additional tweaking will likely be required in production environments to ensure security.
+
+A solid default starting point for `UFW` blocking comes from the "default" policy set, which can be activated via:
+
+```bash
+sudo ufw default allow outgoing # Alternatively "deny" depending on server prerequisites
+```
+
+```bash
+sudo ufw default deny incoming
+```
+
+The first policy to set is to allow SSH access, otherwise you may inadvertently lock yourself out of the system. (Physical logins would still work.)
+
+```bash
+sudo ufw limit in ssh # Ideally setup more script policies to limit who can connect via SSH
+```
+
+> **NOTE**: "limit in" limits the amount of inbound connections that are allowed. Alternatively "allow" can be used if lots of SSH connections are expected.
+
+
+Once the initial policies have been put in place, you can start `UFW`
+
+```bash
+sudo ufw enable
+```
+
+Verify the status of `UFW` and all the active policies:
+
+```bash
+sudo ufw status
+```
 
 ## Setting Timezone
 
@@ -244,6 +287,12 @@ For accuracy in your logs please ensure that your timezone is properly set. To p
 sudo locale-gen en_US.UTF-8
 sudo update-locale LANG=en_US.UTF-8
 sudo dpkg-reconfigure tzdata
+```
+
+Alternatively, you can use the `timedatectl`:
+
+```bash
+timedatectl set-timezone EST # Eastern Standard Time
 ```
 
 ## Securing Sudo (TODO)
@@ -289,10 +338,10 @@ tmpfs     /run/shm     tmpfs     defaults,noexec,nosuid     0     0
 Once you save the changes exit and reboot your system:
 
 ```bash
-sudo reboot
+sudo shutdown -r now
 ```
 
-> **Note**: If you're following along with the guide then you can wait until the end to preform this action.
+> **NOTE**: If you're following along with the guide you can wait until the end to preform this action.
 
 ## Disabling Root User
 
@@ -335,6 +384,28 @@ Finally, reload the configuration:
 
 ```bash
 sudo sysctl -p
+```
+
+## Setting Up Breach Detector (TODO: Test Me) http://bookofzeus.com/harden-ubuntu/software/install-breach-detector/
+
+In the event of an account breach on your system, this simple `.bash_profile` script will help log the IP address of whoever logs in to the user.
+
+Open or create `.bash_profile`:
+
+```bash
+nano .bash_profile
+```
+
+Add the following to `.bash_profile`:
+
+```bash
+echo 'ACCESS GRANTED on:' `date` `who` | mail -s "ACCESS GRANTED from `who | awk '{print $6}'`" <YOUR>@<EMAIL>.com
+```
+
+The following will automatically append the script to the `.bash_profile`, creating the file if it does not already exist:
+
+```bash
+echo ''ALERT - ACCESS GRANTED on:' `date` `who` | mail -s "ACCESS GRANTED from `who | awk '{print $6}'`" <YOUR>@<EMAIL>.com' >> ~/.bash_profile
 ```
 
 # Application Installation & Configuration :wrench:
@@ -409,7 +480,7 @@ sudo rkhunter --propupd
 sudo rkhunter --check
 ```
 
-> **Note:** If anything is detected immediately look up remediation strategies!
+> **NOTE:** If anything is detected immediately look up remediation strategies!
 
 ## Anti-Virus Scanning (**ClamAV**)
 
@@ -486,7 +557,7 @@ sudo psad -H # (case sensitive)
 
 [Fail2ban](https://www.fail2ban.org/wiki/index.php/Main_Page) scans log files and bans IPs that show the malicious signs such as too many password failures, port scanning, searching for exploits, etc.
 
-> **Note**: Fail2ban comes well configured out of the box so the additional configuration steps are optional but recommended.
+> **NOTE**: Fail2ban comes well configured out of the box so the additional configuration steps are optional but recommended.
 
 Install `fail2ban` with the following command:
 
@@ -540,7 +611,7 @@ Add this line to `/etc/cron.daily/00logwatch`:
 /usr/sbin/logwatch --output mail --mailto <YOUR>@<EMAIL>.com --detail high
 ```
 
-> **Note:** This will enable a daily email to generate with high details and send to whatever email is specified. For this to work properly SNMP should be allowed through the firewall.
+> **NOTE:** This will enable a daily email to generate with high details and send to whatever email is specified. For this to work properly SNMP should be allowed through the firewall.
 
 # System Stability :triangular_ruler:
 
@@ -573,7 +644,7 @@ vm.panic_on_oom=1
 kernel.panic=10
 ```
 
-> **Note**: "vm.panic_on_oom=1" line enables panic on OOM; the "kernel.panic=10" line tells the kernel to reboot ten seconds after panicking.
+> **NOTE**: "vm.panic_on_oom=1" line enables panic on OOM; the "kernel.panic=10" line tells the kernel to reboot ten seconds after panicking.
 
 # Guide Automation Script :scroll:
 
@@ -586,7 +657,7 @@ I will not take responsibility for any damage caused by the script.
 Once everything is said and done, it's time to restart the server:
 
 ```bash
-sudo reboot
+sudo shutdown -r now
 ```
 
 After the dust settles you should have a significantly more secure Linux server box. I hope this guide has helped you and please feel free to reach out to me if you encounter issues.
@@ -627,6 +698,10 @@ Please create an issue and describe your problem. I am one man and this is not m
 > Why did you make this?
 
 I made this as a reference for myself to quickly setup servers whenever I need one for a specific project.
+
+> Would this work on a Raspberry Pi?
+
+Yes! In fact majority of this guide was specifically created to cater to my needs when creating Raspberry Pi servers. I'd recommend using this [nifty little tool](https://github.com/Hexxeh/rpi-update) to ensure that you RPI stays up to date firmware wise!
 
 Have more questions? Feel free to ask!
 

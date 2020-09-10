@@ -1,19 +1,22 @@
 # Your First Minute On A Server
 
-```                                                                
-                      `YMM'   `MM' `7MM"""YMM  `7MMM.     ,MMF'  .g8""8q.       db        .M"""bgd 
-                        VMA   ,V     MM    `7    MMMb    dPMM  .dP'    `YM.    ;MM:      ,MI    "Y 
-                         VMA ,V      MM   d      M YM   ,M MM  dM'      `MM   ,V^MM.     `MMb.     
-                          VMMP       MM""MM      M  Mb  M' MM  MM        MM  ,M  `MM       `YMMNq. 
-                           MM        MM   Y      M  YM.P'  MM  MM.      ,MP  AbmmmqMA    .     `MM 
-                           MM        MM          M  `YM'   MM  `Mb.    ,dP' A'     VML   Mb     dM 
-                         .JMML.    .JMML.      .JML. `'  .JMML.  `"bmmd"' .AMA.   .AMMA .P"Ybmmd"  
+```
+                      `YMM'   `MM' `7MM"""YMM  `7MMM.     ,MMF'  .g8""8q.       db        .M"""bgd
+                        VMA   ,V     MM    `7    MMMb    dPMM  .dP'    `YM.    ;MM:      ,MI    "Y
+                         VMA ,V      MM   d      M YM   ,M MM  dM'      `MM   ,V^MM.     `MMb.
+                          VMMP       MM""MM      M  Mb  M' MM  MM        MM  ,M  `MM       `YMMNq.
+                           MM        MM   Y      M  YM.P'  MM  MM.      ,MP  AbmmmqMA    .     `MM
+                           MM        MM          M  `YM'   MM  `Mb.    ,dP' A'     VML   Mb     dM
+                         .JMML.    .JMML.      .JML. `'  .JMML.  `"bmmd"' .AMA.   .AMMA .P"Ybmmd"
+
+                      """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 ```
 
-**Your First Minute On A Server** _(YFMOAS)_
+**Your First Minute On A Server** ( YFMOAS )
 
+_An Essential Security guide for Linux Servers_
 
-Hi! :wave: My name is [Remi Teeple](https://remi.works) and this guide is aimed to provide a consistent standard for server initialization and rollout. This guide was created from the perspective of a layman as security and hosting is not necessarily my forte. As such I wanted to consolidate my ideal server creation for my own reference but I figured I should share my methodology and ideology via GitHub for anyone to use. Originally inspired by an [old article](https://plusbryan.com/my-first-5-minutes-on-a-server-or-essential-security-for-linux-servers) my hope is to keep the information in said article relevant in a modern 2020 eco-system while adding additional security.
+Hi! :wave: My name is [Remi Teeple](https://remi.works) and this guide is aimed to provide a consistent standard for server initialization and rollout. This guide was created from the perspective of a layman as security and hosting is not necessarily my forte. As such I wanted to consolidate my ideal server creation for my own reference but I figured I should share my methodology and ideology via GitHub for anyone to use. Originally inspired by the legendary ["My First 5 Minutes On A Server; Or, Essential Security for Linux Servers"](https://plusbryan.com/my-first-5-minutes-on-a-server-or-essential-security-for-linux-servers) my hope is to keep the information in said article relevant in a modern 2020 eco-system while adding additional security.
 
 This entire guide has been tested on Ubuntu 20.08 (&ARM).
 
@@ -61,21 +64,21 @@ If you aren't much for reading then please use [the included script]() to automa
 
 This guide is split into **4 sections**. Each section can be used independently of one another and will provide explanations as to what each step does. I've catered this guide to Ubuntu / Debian architecture but many of the principles and configurations will work on any Linux Distribution.
 
-### System Hardening
+**System Hardening**
 
-Covers hardening a fresh Linux Server with native commands and configurations to shrink the default attack surface.
+  * Covers hardening a fresh Linux Server with native commands and configurations to shrink the default attack surface.
 
-### Application Installation & Configuration
+**Application Installation & Configuration**
 
-This section covers the installation and configuration of software to assist in the hardening of the Linux server.
+  * This section covers the installation and configuration of software to assist in the hardening of the Linux server.
 
-### Server Stability
+**Server Stability**
 
-Advice for maintaining server stability with regular up-keep tasks and some minor automation.
+  * Advice for maintaining server stability with regular up-keep tasks and some minor automation.
 
-### Guide Automation Script
+**Guide Automation Script**
 
-A simple explanation as to what the included script does to your machine and how to use it.
+  * A simple explanation as to what the included script does to your machine and how to use it.
 
 Feel free to use whatever command line editor you like... For this guide all of the examples will be provided with `nano` usage.
 
@@ -122,6 +125,7 @@ sudo apt-get update && sudo apt-get full-upgrade -y
 ```
 
 Optionally we can clean up after we update:
+
 ```bash
 sudo apt-get autoremove -y && sudo apt-get autoclean -y
 ```
@@ -262,7 +266,6 @@ sudo ufw limit in ssh # Ideally setup more script policies to limit who can conn
 ```
 
 > **NOTE**: "limit in" limits the amount of inbound connections that are allowed. Alternatively "allow" can be used if lots of SSH connections are expected.
-
 
 Once the initial policies have been put in place, you can start `UFW`
 
@@ -665,7 +668,7 @@ After the dust settles you should have a significantly more secure Linux server 
 
 > Why use this when there's "X"?
 
-You have freewill, I just provide the guide. If there is a better, more up to date, or more concise guide then feel free to link it for other users benefit.  I created this guide to help collate my information and learn a little more about various security procedures.
+You have freewill, I just provide the guide. If there is a better, more up to date, or more concise guide then feel free to link it for other users benefit. I created this guide to help collate my information and learn a little more about various security procedures.
 
 > Who are you?
 

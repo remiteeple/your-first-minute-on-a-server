@@ -12,7 +12,7 @@
 
 **Your First Minute On A Server** _(YFMOAS)_
 
-Hi! :wave: My name is [Remi Teeple](https://remi.works) and this guide is aimed to provide a consistent standard for server initialization and rollout. I wanted to consolidate my ideal server creation for my own reference but I figured I should share my methodology and ideology. Originally inspired by an [old article](https://plusbryan.com/my-first-5-minutes-on-a-server-or-essential-security-for-linux-servers) my hope is to keep the information in said article relevant in a modern 2020 eco-system while adding additional security. :godmode:
+Hi! :wave: My name is [Remi Teeple](https://remi.works) and this guide is aimed to provide a consistent standard for server initialization and rollout. This guide was created from the perspective of a layman as security and hosting is not necessarily my forte. As such I wanted to consolidate my ideal server creation for my own reference but I figured I should share my methodology and ideology via GitHub for anyone to use. Originally inspired by an [old article](https://plusbryan.com/my-first-5-minutes-on-a-server-or-essential-security-for-linux-servers) my hope is to keep the information in said article relevant in a modern 2020 eco-system while adding additional security. :godmode:
 
 If you aren't much for reading then please use [the included script]() to automate this entire guide.
 
@@ -23,6 +23,7 @@ If you aren't much for reading then please use [the included script]() to automa
 - [Introduction](#introduction)
     - [System Hardening](#system-hardening)
     - [Application Installation & Configuration](#application-installation--configuration)
+    - [Server Stability](#server-stability)
     - [Guide Automation Script](#guide-automation-script)
 - [System Hardening](#system-hardening-1)
   - [Creating a User](#creating-a-user)
@@ -30,9 +31,13 @@ If you aren't much for reading then please use [the included script]() to automa
   - [Updating and Upgrading](#updating-and-upgrading)
   - [Creating & Using SSH Authentication Keys](#creating--using-ssh-authentication-keys)
   - [Securing SSH](#securing-ssh)
-  - [Firewall Setup (**UFW**)](#firewall-setup-ufw)
+  - [Firewall Setup (**UFW**) (TODO)](#firewall-setup-ufw-todo)
+  - [Setting Timezone](#setting-timezone)
   - [Securing Sudo (TODO)](#securing-sudo-todo)
+  - [Setting Security Limits](#setting-security-limits)
   - [Securing Shared Memory](#securing-shared-memory)
+  - [Disabling Root User](#disabling-root-user)
+  - [Disabling IPv6](#disabling-ipv6)
 - [Application Installation & Configuration](#application-installation--configuration-1)
   - [Update Automation (**unattended-upgrades**)](#update-automation-unattended-upgrades)
   - [Checking for Rootkits (**chkrootkit** & **rkhunter**)](#checking-for-rootkits-chkrootkit--rkhunter)
@@ -40,13 +45,17 @@ If you aren't much for reading then please use [the included script]() to automa
   - [iptables Intrusion Detection & Prevention (**PSAD**)](#iptables-intrusion-detection--prevention-psad)
   - [Application Intrusion Detection & Prevention (**Fail2Ban**)](#application-intrusion-detection--prevention-fail2ban)
   - [System Logging (**Logwatch**)](#system-logging-logwatch)
+- [System Stability](#system-stability)
+  - [Cleaning Installed Packages](#cleaning-installed-packages)
+  - [Reboot on Out Of Memory](#reboot-on-out-of-memory)
 - [The Script](#the-script)
 - [Conclusion](#conclusion)
+- [Q&A](#qa)
 - [License](#license)
 
 # Introduction
 
-This guide is split into **X sections**. Each section can be used independently of one another and will provide explanations as to what each step does. I've catered this guide to Ubuntu / Debian architecture but many of the principles and configurations will work on any Linux Distribution.
+This guide is split into **4 sections**. Each section can be used independently of one another and will provide explanations as to what each step does. I've catered this guide to Ubuntu / Debian architecture but many of the principles and configurations will work on any Linux Distribution.
 
 ### System Hardening
 
@@ -55,6 +64,10 @@ Covers hardening a fresh Linux Server with native commands and configurations to
 ### Application Installation & Configuration
 
 This section covers the installation and configuration of software to assist in the hardening of the Linux server.
+
+### Server Stability
+
+Advice for maintaining server stability with regular up-keep tasks and some minor automation.
 
 ### Guide Automation Script
 
@@ -176,7 +189,7 @@ If you do not wish to read the [Securing SSH](#securing-ssh) section the informa
 
 To enable the use of SSH key authentication exclusively (no password authentication) ensure that `sshd_config` disallows password authentication via the following...
 
-Open `sshd_config`:
+Open `/etc/ssh/sshd_config`:
 
 ```bash
 sudo nano /etc/ssh/sshd_config
@@ -188,13 +201,13 @@ Add the following line to the bottom of the file:
 PasswordAuthentication no # Disables password authentication (this enables SSH key auth)
 ```
 
-> **Note**: Do not loose your SSH public key as it will be your only way to login to the server remotely. Physical logins will still be available.
+> **Note**: Do not lose your SSH public key as it will be your only way to login to the server remotely. Physical logins will still be available.
 
 ## Securing SSH
 
 The default SSH port _(22)_ is an easy target for most bad actors. To help mitigate the amount of hits you might receive against a public facing SSH port, you can change it to a non-standard port. Ensure that the port that you change SSH to is not already in use, that is typically a port **above 1024**... Here [is a list](https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Well-known_ports) of ports to avoid.
 
-Open `sshd_config`:
+Open `/etc/ssh/sshd_config`:
 
 ```bash
 sudo nano /etc/ssh/sshd_config
@@ -217,13 +230,43 @@ After we're done making changes the SSH service must be restarted to take said c
 sudo service ssh restart
 ```
 
-## Firewall Setup (**UFW**)
+## Firewall Setup (**UFW**) (TODO)
 
 **UFW** _(Uncomplicated Firewall)_ is a simple but powerful tool to secure a Linux Server.
 
 Before anything else. We must add SSH to the allow list to prevent your connection dropping
 
+## Setting Timezone
+
+For accuracy in your logs please ensure that your timezone is properly set. To properly set your timezone use the following commands...
+
+```bash
+sudo locale-gen en_US.UTF-8
+sudo update-locale LANG=en_US.UTF-8
+sudo dpkg-reconfigure tzdata
+```
+
 ## Securing Sudo (TODO)
+
+## Setting Security Limits
+
+While rudimentary, [Fork Bomb](https://en.wikipedia.org/wiki/Fork_bomb) attacks are incredibly effective at causing system outages through means of a denial-of-service via resource starvation. To prevent such an attack from occuring on your Linux server the following **Security Limits** can be set...
+
+Open `/etc/security/limits.conf`:
+
+```bash
+sudo nano /etc/security/limits.conf
+```
+
+The file explains how to setup specific user and group limits. If you want a simple solution to limit the amount of all user and group processes use the following.
+
+Add this to the bottom of `/etc/security/limits.conf`:
+
+```bash
+* hard nproc 500
+```
+
+"\*" represents the users, in this case all. "hard" sets a hard limit to the number of processes. "nproc" defines that we are limiting the number of processes. "500" is the maximum number of processes that a user can have.
 
 ## Securing Shared Memory
 
@@ -231,13 +274,13 @@ Shared memory is a performant mehtod of passing data between running programs. S
 
 In short, shared memory opens an attack vector against running services, securing shared memory prevents this from happening.
 
-To secure shared memory, first open your `fstab` file:
+To secure shared memory, first open your `/etc/fstab` file:
 
 ```bash
 sudo nano /etc/fstab
 ```
 
-Add the following line to the bottom of the open `fstab` file:
+Add the following line to the bottom of the open `/etc/fstab` file:
 
 ```bash
 tmpfs     /run/shm     tmpfs     defaults,noexec,nosuid     0     0
@@ -250,6 +293,49 @@ sudo reboot
 ```
 
 > **Note**: If you're following along with the guide then you can wait until the end to preform this action.
+
+## Disabling Root User
+
+Disabling the root account is a safe action that removes the poteintial risk of a bad actor gaining access to it. We disable the account instead of removing it as that may cause issues if for whatever reason the root user is later needed.
+
+To disable the root user use the following command:
+
+```bash
+# "-l" indicates that we are locking the user account
+sudo passwd -l root
+```
+
+To enable the root user use the following command:
+
+```bash
+# "-u" indicates that we are unlocking the user account
+sudo passwd -u root
+```
+
+## Disabling IPv6
+
+IPv6 currently poses a huge attack surface to most existing machines that are internet connected. As such disabling IPv6 entirely is a suitable option in some cases. While entirely dependant on the purpose of the server, it is recommended to disable IPv6 communications unless they are vital to hosting.
+
+To disable IPv6 we first open the `/etc/sysctl.conf` file:
+
+```bash
+sudo nano /etc/sysctl.conf
+```
+
+Then add the following at the bottom of the `/etc/sysctl.conf` file:
+
+```bash
+# Disable IPv6
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+```
+
+Finally, reload the configuration:
+
+```bash
+sudo sysctl -p
+```
 
 # Application Installation & Configuration
 
@@ -265,7 +351,7 @@ To keep the system up-to-date without admin intervention we will install [**unat
 sudo apt-get install unattended-upgrades
 ```
 
-Then open the `10periodic` apt.conf file:
+Open `/etc/apt/apt.conf.d/10periodic`:
 
 ```bash
 sudo nano /etc/apt/apt.conf.d/10periodic
@@ -282,18 +368,18 @@ APT::Periodic::Unattended-Upgrade "1";
 
 Now we need to configure unattended-upgrades to work properly. unattended-upgrades has many different configuration settings that I suggest you explore. For the purpose of this guide however, we will set up unattended-upgrades quite basically.
 
-Open the `50unattended-upgrades` apt.conf file:
+Open `/etc/apt/apt.conf.d/50unattended-upgrades`:
 
 ```bash
 sudo nano /etc/apt/apt.conf.d/50unattended-upgrades
 ```
 
-And add the following to the bottom of the file:
+Add the following to the bottom of the file:
 
 ```bash
 Unattended-Upgrade::Allowed-Origins {
         "Ubuntu lucid-security";
-        "Ubuntu lucid-updates"; #Optionally disable to improve stability
+        "Ubuntu lucid-updates"; # Optionally disable to improve stability
 };
 ```
 
@@ -327,8 +413,8 @@ sudo rkhunter --check
 
 ## Anti-Virus Scanning (**ClamAV**)
 
+[ClamAV](https://www.clamav.net/) is an anti-virus scanner for Linux systems. It uses **ClamAV-Freshclam** to update virus definitions and **ClamAV-Daemon** keeps the `clamd` process running to speed up scanning.
 A necessity for any computer in the modern internet age is a competent anti-virus (while it's only ever as effective as the user's safe browsing practices). **ClamAV** provides just that.
-**ClamAV** is an anti-virus scanner for Linux systems. It uses **ClamAV-Freshclam** to update virus definitions and **ClamAV-Daemon** keeps the `clamd` process running to speed up scanning.
 
 ```bash
 sudo apt-get install clamav clamav-freshclam clamav-daemon
@@ -408,13 +494,13 @@ Install `fail2ban` with the following command:
 sudo apt-get install fail2ban
 ```
 
-Create the file `jail.local` (not `jail.conf` as it may be overwritten by updates):
+Create the file `/etc/fail2ban/jail.local` (not `jail.conf` as it may be overwritten by updates):
 
 ```bash
-sudo nano /etc/fail2ban/jail.conf
+sudo nano /etc/fail2ban/jail.local
 ```
 
-Add or replace the following in the `jail.local` file:
+Add or replace the following in the `/etc/fail2ban/jail.local` file:
 
 ```bash
 [sshd]
@@ -442,19 +528,52 @@ As always, the first step is to install the application:
 sudo apt-get install logwatch
 ```
 
-We then need to open the `00logwatch` cron file:
+We then need to open the `/etc/cron.daily/00logwatch` cron file:
 
 ```bash
 sudo nano /etc/cron.daily/00logwatch
 ```
 
-And add this line:
+Add this line to `/etc/cron.daily/00logwatch`:
 
 ```bash
 /usr/sbin/logwatch --output mail --mailto <YOUR>@<EMAIL>.com --detail high
 ```
 
 > **Note:** This will enable a daily email to generate with high details and send to whatever email is specified. For this to work properly SNMP should be allowed through the firewall.
+
+# System Stability
+
+Ensuring stability and longevity is the focus here. Ideally with email notifications setup on your server you will know of specific outages, intrusions, or any other major issues that might require an administrator's intervention. If you plan to regularly maintain the server manually then this section will include some relevant commands and information on how to do that.
+
+## Cleaning Installed Packages
+
+If unattended-upgrades is installed the following commands should run automatically given the configuration in this guide was used. Otherwise, these commands should be run from time to time to clean and unused packages from the server.
+
+Execute the following command to automatically remove and clean unused packages:
+
+```bash
+sudo apt-get autoremove && sudo apt-get autoclean
+```
+
+## Reboot on Out Of Memory
+
+Occassionally it can be helpful to have the system automatically reboot if it runs out of memory. To enable this and prevent downtime and outages do the following...
+
+Open `/etc/sysctl.conf`:
+
+```bash
+sudo nano /etc/sysctl.conf
+```
+
+Add the following lines to the end of the file:
+
+```bash
+vm.panic_on_oom=1
+kernel.panic=10
+```
+
+> **Note**: "vm.panic_on_oom=1" line enables panic on OOM; the "kernel.panic=10" line tells the kernel to reboot ten seconds after panicking.
 
 # The Script
 
@@ -472,8 +591,44 @@ sudo reboot
 
 After the dust settles you should have a significantly more secure Linux server box. I hope this guide has helped you and please feel free to reach out to me if you encounter issues.
 
-Written by [Remi Teeple](https://remi.works)
+# Q&A
 
+> Why use this when there's "X"?
+
+You have freewill, I just provide the guide.  If there is a better, more up to date, or more concise guide then feel free to link it for other users benefit.
+
+> Who are you?
+
+I'm [Remi Teeple](https://remi.works), a game and software developer from Ottawa Ontario Canada. I like servers and security too :^)
+
+> Why the name "Your First Minute On A Server"?
+
+YFMOAS was named such because I wanted to compete directly with the much popularized server setup phrase of "My First X On A Server". This is largely done as homage to other guides.
+
+> Do you have any additional resources?
+
+- http://bookofzeus.com/
+- https://gist.github.com/lokhman/cc716d2e2d373dd696b2d9264c0287a3
+- https://github.com/imthenachoman/How-To-Secure-A-Linux-Server
+- https://www.thefanclub.co.za/how-to/how-secure-ubuntu-1604-lts-server-part-1-basics
+- https://www.nuharborsecurity.com/ubuntu-server-hardening-guide-2/
+- https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys-on-ubuntu-20-04
+- https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-20-04
+- https://plusbryan.com/my-first-5-minutes-on-a-server-or-essential-security-for-linux-servers
+
+> I found an issue with the guide.
+
+Please contact me immediately via [remi@teeple.xyz](mailto:remi@teeple.xyz).  I am currently in the process of understanding GitHub's core systems better so I will likely allow contributors in the near future.
+
+> Something broke and I need help!
+
+Please create an issue and describe your problem.  I am one man and this is not my day job, nor is it something I deal with frequently but I will attempt to answer any questions.
+
+> Why did you make this?
+
+I made this as a reference for myself to quickly setup servers whenever I need one for a specific project.
+
+Have more questions?  Feel free to ask!
 # License
 
 [![CC-BY-SA](https://i.creativecommons.org/l/by-sa/4.0/88x31.png)](#license)

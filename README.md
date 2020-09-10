@@ -1,19 +1,16 @@
 # Your First Minute On A Server
 
-<p align="center">
-
-<pre>
-     :::   :::    ::::::::::      :::   :::        ::::::::          :::          ::::::::
-    :+:   :+:    :+:            :+:+: :+:+:      :+:    :+:       :+: :+:       :+:    :+:
-    +:+ +:+     +:+           +:+ +:+:+ +:+     +:+    +:+      +:+   +:+      +:+
-    +#++:      :#::+::#      +#+  +:+  +#+     +#+    +:+     +#++:++#++:     +#++:++#++
-    +#+       +#+           +#+       +#+     +#+    +#+     +#+     +#+            +#+
-   #+#   #+# #+#       #+# #+#       #+# #+# #+#    #+# #+# #+#     #+# #+# #+#    #+#
-  ###   ### ###       ### ###       ### ###  ########  ### ###     ### ###  ########
-</pre>
+```                                                                
+          `YMM'   `MM' `7MM"""YMM  `7MMM.     ,MMF'  .g8""8q.       db        .M"""bgd 
+            VMA   ,V     MM    `7    MMMb    dPMM  .dP'    `YM.    ;MM:      ,MI    "Y 
+             VMA ,V      MM   d      M YM   ,M MM  dM'      `MM   ,V^MM.     `MMb.     
+              VMMP       MM""MM      M  Mb  M' MM  MM        MM  ,M  `MM       `YMMNq. 
+               MM        MM   Y      M  YM.P'  MM  MM.      ,MP  AbmmmqMA    .     `MM 
+               MM        MM          M  `YM'   MM  `Mb.    ,dP' A'     VML   Mb     dM 
+             .JMML.    .JMML.      .JML. `'  .JMML.  `"bmmd"' .AMA.   .AMMA .P"Ybmmd"  
+```
 
 **Your First Minute On A Server** _(YFMOAS)_
-</p>
 
 
 Hi! :wave: My name is [Remi Teeple](https://remi.works) and this guide is aimed to provide a consistent standard for server initialization and rollout. This guide was created from the perspective of a layman as security and hosting is not necessarily my forte. As such I wanted to consolidate my ideal server creation for my own reference but I figured I should share my methodology and ideology via GitHub for anyone to use. Originally inspired by an [old article](https://plusbryan.com/my-first-5-minutes-on-a-server-or-essential-security-for-linux-servers) my hope is to keep the information in said article relevant in a modern 2020 eco-system while adding additional security.
@@ -247,7 +244,6 @@ sudo service ssh restart
 ## Firewall Setup (**UFW**)
 
 **UFW** _(Uncomplicated Firewall)_ is a simple but powerful tool to secure a Linux Server. The firewall configuration is largely dependant on the purpose of your server. This guide will cover some essential policies to ensure a good baseline for security, but additional tweaking will likely be required in production environments to ensure security.
-<<<<<<< HEAD
 
 A solid default starting point for `UFW` blocking comes from the "default" policy set, which can be activated via:
 
@@ -274,34 +270,6 @@ Once the initial policies have been put in place, you can start `UFW`
 sudo ufw enable
 ```
 
-=======
-
-A solid default starting point for `UFW` blocking comes from the "default" policy set, which can be activated via:
-
-```bash
-sudo ufw default allow outgoing # Alternatively "deny" depending on server prerequisites
-```
-
-```bash
-sudo ufw default deny incoming
-```
-
-The first policy to set is to allow SSH access, otherwise you may inadvertently lock yourself out of the system. (Physical logins would still work.)
-
-```bash
-sudo ufw limit in ssh # Ideally setup more script policies to limit who can connect via SSH
-```
-
-> **NOTE**: "limit in" limits the amount of inbound connections that are allowed. Alternatively "allow" can be used if lots of SSH connections are expected.
-
-
-Once the initial policies have been put in place, you can start `UFW`
-
-```bash
-sudo ufw enable
-```
-
->>>>>>> 95f00d8ecaee9bfd1b2e3053ea244e1267ad9d36
 Verify the status of `UFW` and all the active policies:
 
 ```bash
@@ -679,6 +647,8 @@ kernel.panic=10
 
 This script is intended to act as an automation tool for this guide. As such I highly recommended you read through the guide before executing the script. This script is not meant to supplement the guide, or meant to be done as a final step. Instead this script IS the guide. Please only modify your system **AFTER RUNNING THE SCRIPT**.
 
+The script cannot safely be 100% automated so prompts may appear to request user verification and outputs may display sensitive information for safe-keeping on other systems.
+
 I will not take responsibility for any damage caused by the script.
 
 # Conclusion :wave:
@@ -695,11 +665,11 @@ After the dust settles you should have a significantly more secure Linux server 
 
 > Why use this when there's "X"?
 
-You have freewill, I just provide the guide. If there is a better, more up to date, or more concise guide then feel free to link it for other users benefit.
+You have freewill, I just provide the guide. If there is a better, more up to date, or more concise guide then feel free to link it for other users benefit.  I created this guide to help collate my information and learn a little more about various security procedures.
 
 > Who are you?
 
-I'm [Remi Teeple](https://remi.works), a game and software developer from Ottawa Ontario Canada. I like servers and security too :^)
+I'm [Remi Teeple](https://remi.works), a game and software developer from Ottawa Ontario Canada. I like servers and security too.
 
 > Why the name "Your First Minute On A Server"?
 

@@ -247,6 +247,7 @@ sudo service ssh restart
 ## Firewall Setup (**UFW**)
 
 **UFW** _(Uncomplicated Firewall)_ is a simple but powerful tool to secure a Linux Server. The firewall configuration is largely dependant on the purpose of your server. This guide will cover some essential policies to ensure a good baseline for security, but additional tweaking will likely be required in production environments to ensure security.
+<<<<<<< HEAD
 
 A solid default starting point for `UFW` blocking comes from the "default" policy set, which can be activated via:
 
@@ -273,6 +274,34 @@ Once the initial policies have been put in place, you can start `UFW`
 sudo ufw enable
 ```
 
+=======
+
+A solid default starting point for `UFW` blocking comes from the "default" policy set, which can be activated via:
+
+```bash
+sudo ufw default allow outgoing # Alternatively "deny" depending on server prerequisites
+```
+
+```bash
+sudo ufw default deny incoming
+```
+
+The first policy to set is to allow SSH access, otherwise you may inadvertently lock yourself out of the system. (Physical logins would still work.)
+
+```bash
+sudo ufw limit in ssh # Ideally setup more script policies to limit who can connect via SSH
+```
+
+> **NOTE**: "limit in" limits the amount of inbound connections that are allowed. Alternatively "allow" can be used if lots of SSH connections are expected.
+
+
+Once the initial policies have been put in place, you can start `UFW`
+
+```bash
+sudo ufw enable
+```
+
+>>>>>>> 95f00d8ecaee9bfd1b2e3053ea244e1267ad9d36
 Verify the status of `UFW` and all the active policies:
 
 ```bash

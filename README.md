@@ -12,20 +12,20 @@
 
 **Your First Minute On A Server** _(YFMOAS)_
 
-Hi! :wave: My name is [Remi Teeple](https://remi.works) and this guide is aimed to provide a consistent standard for server initialization and rollout. This guide was created from the perspective of a layman as security and hosting is not necessarily my forte. As such I wanted to consolidate my ideal server creation for my own reference but I figured I should share my methodology and ideology via GitHub for anyone to use. Originally inspired by an [old article](https://plusbryan.com/my-first-5-minutes-on-a-server-or-essential-security-for-linux-servers) my hope is to keep the information in said article relevant in a modern 2020 eco-system while adding additional security. :godmode:
+Hi! :wave: My name is [Remi Teeple](https://remi.works) and this guide is aimed to provide a consistent standard for server initialization and rollout. This guide was created from the perspective of a layman as security and hosting is not necessarily my forte. As such I wanted to consolidate my ideal server creation for my own reference but I figured I should share my methodology and ideology via GitHub for anyone to use. Originally inspired by an [old article](https://plusbryan.com/my-first-5-minutes-on-a-server-or-essential-security-for-linux-servers) my hope is to keep the information in said article relevant in a modern 2020 eco-system while adding additional security.
 
 If you aren't much for reading then please use [the included script]() to automate this entire guide.
 
-# Table of Contents
+# Table of Contents :book:
 
 - [Your First Minute On A Server](#your-first-minute-on-a-server)
-- [Table of Contents](#table-of-contents)
-- [Introduction](#introduction)
+- [Table of Contents :book:](#table-of-contents-book)
+- [Introduction :handshake:](#introduction-handshake)
     - [System Hardening](#system-hardening)
     - [Application Installation & Configuration](#application-installation--configuration)
     - [Server Stability](#server-stability)
     - [Guide Automation Script](#guide-automation-script)
-- [System Hardening](#system-hardening-1)
+- [System Hardening :lock:](#system-hardening-lock)
   - [Creating a User](#creating-a-user)
   - [Changing Default Passwords](#changing-default-passwords)
   - [Updating and Upgrading](#updating-and-upgrading)
@@ -38,22 +38,22 @@ If you aren't much for reading then please use [the included script]() to automa
   - [Securing Shared Memory](#securing-shared-memory)
   - [Disabling Root User](#disabling-root-user)
   - [Disabling IPv6](#disabling-ipv6)
-- [Application Installation & Configuration](#application-installation--configuration-1)
+- [Application Installation & Configuration :wrench:](#application-installation--configuration-wrench)
   - [Update Automation (**unattended-upgrades**)](#update-automation-unattended-upgrades)
   - [Checking for Rootkits (**chkrootkit** & **rkhunter**)](#checking-for-rootkits-chkrootkit--rkhunter)
   - [Anti-Virus Scanning (**ClamAV**)](#anti-virus-scanning-clamav)
   - [iptables Intrusion Detection & Prevention (**PSAD**)](#iptables-intrusion-detection--prevention-psad)
   - [Application Intrusion Detection & Prevention (**Fail2Ban**)](#application-intrusion-detection--prevention-fail2ban)
   - [System Logging (**Logwatch**)](#system-logging-logwatch)
-- [System Stability](#system-stability)
+- [System Stability :triangular_ruler:](#system-stability-triangular_ruler)
   - [Cleaning Installed Packages](#cleaning-installed-packages)
   - [Reboot on Out Of Memory](#reboot-on-out-of-memory)
-- [The Script](#the-script)
-- [Conclusion](#conclusion)
-- [Q&A](#qa)
-- [License](#license)
+- [Guide Automation Script :scroll:](#guide-automation-script-scroll)
+- [Conclusion :wave:](#conclusion-wave)
+- [Q&A :grey_question:](#qa-grey_question)
+- [License :exclamation:](#license-exclamation)
 
-# Introduction
+# Introduction :handshake:
 
 This guide is split into **4 sections**. Each section can be used independently of one another and will provide explanations as to what each step does. I've catered this guide to Ubuntu / Debian architecture but many of the principles and configurations will work on any Linux Distribution.
 
@@ -75,7 +75,7 @@ A simple explanation as to what the included script does to your machine and how
 
 Feel free to use whatever command line editor you like... For this guide all of the examples will be provided with `nano` usage.
 
-# System Hardening
+# System Hardening :lock:
 
 **System Hardening** is the process of securing a system's settings and configuration files in attempt to minimize threat vulnerability and the possibility of compromise. **System Hardening** is done by shrinking the attack surface to reduce the amount of attack vectors a bad actor might attempt to exploit.
 
@@ -337,7 +337,7 @@ Finally, reload the configuration:
 sudo sysctl -p
 ```
 
-# Application Installation & Configuration
+# Application Installation & Configuration :wrench:
 
 The following section will provide insight on the installation and configuration of software to enable intrusion detection, intrusion prevention, malware detection, system logging, automation
 
@@ -542,7 +542,7 @@ Add this line to `/etc/cron.daily/00logwatch`:
 
 > **Note:** This will enable a daily email to generate with high details and send to whatever email is specified. For this to work properly SNMP should be allowed through the firewall.
 
-# System Stability
+# System Stability :triangular_ruler:
 
 Ensuring stability and longevity is the focus here. Ideally with email notifications setup on your server you will know of specific outages, intrusions, or any other major issues that might require an administrator's intervention. If you plan to regularly maintain the server manually then this section will include some relevant commands and information on how to do that.
 
@@ -575,13 +575,13 @@ kernel.panic=10
 
 > **Note**: "vm.panic_on_oom=1" line enables panic on OOM; the "kernel.panic=10" line tells the kernel to reboot ten seconds after panicking.
 
-# The Script
+# Guide Automation Script :scroll:
 
 This script is intended to act as an automation tool for this guide. As such I highly recommended you read through the guide before executing the script. This script is not meant to supplement the guide, or meant to be done as a final step. Instead this script IS the guide. Please only modify your system **AFTER RUNNING THE SCRIPT**.
 
 I will not take responsibility for any damage caused by the script.
 
-# Conclusion
+# Conclusion :wave:
 
 Once everything is said and done, it's time to restart the server:
 
@@ -591,11 +591,11 @@ sudo reboot
 
 After the dust settles you should have a significantly more secure Linux server box. I hope this guide has helped you and please feel free to reach out to me if you encounter issues.
 
-# Q&A
+# Q&A :grey_question:
 
 > Why use this when there's "X"?
 
-You have freewill, I just provide the guide.  If there is a better, more up to date, or more concise guide then feel free to link it for other users benefit.
+You have freewill, I just provide the guide. If there is a better, more up to date, or more concise guide then feel free to link it for other users benefit.
 
 > Who are you?
 
@@ -618,17 +618,18 @@ YFMOAS was named such because I wanted to compete directly with the much popular
 
 > I found an issue with the guide.
 
-Please contact me immediately via [remi@teeple.xyz](mailto:remi@teeple.xyz).  I am currently in the process of understanding GitHub's core systems better so I will likely allow contributors in the near future.
+Please contact me immediately via [remi@teeple.xyz](mailto:remi@teeple.xyz). I am currently in the process of understanding GitHub's core systems better so I will likely allow contributors in the near future.
 
 > Something broke and I need help!
 
-Please create an issue and describe your problem.  I am one man and this is not my day job, nor is it something I deal with frequently but I will attempt to answer any questions.
+Please create an issue and describe your problem. I am one man and this is not my day job, nor is it something I deal with frequently but I will attempt to answer any questions.
 
 > Why did you make this?
 
 I made this as a reference for myself to quickly setup servers whenever I need one for a specific project.
 
-Have more questions?  Feel free to ask!
-# License
+Have more questions? Feel free to ask!
+
+# License :exclamation:
 
 [![CC-BY-SA](https://i.creativecommons.org/l/by-sa/4.0/88x31.png)](#license)

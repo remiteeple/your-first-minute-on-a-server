@@ -1,13 +1,13 @@
 # Your First Minute On A Server
 
 ```                                                                
-          `YMM'   `MM' `7MM"""YMM  `7MMM.     ,MMF'  .g8""8q.       db        .M"""bgd 
-            VMA   ,V     MM    `7    MMMb    dPMM  .dP'    `YM.    ;MM:      ,MI    "Y 
-             VMA ,V      MM   d      M YM   ,M MM  dM'      `MM   ,V^MM.     `MMb.     
-              VMMP       MM""MM      M  Mb  M' MM  MM        MM  ,M  `MM       `YMMNq. 
-               MM        MM   Y      M  YM.P'  MM  MM.      ,MP  AbmmmqMA    .     `MM 
-               MM        MM          M  `YM'   MM  `Mb.    ,dP' A'     VML   Mb     dM 
-             .JMML.    .JMML.      .JML. `'  .JMML.  `"bmmd"' .AMA.   .AMMA .P"Ybmmd"  
+                    `YMM'   `MM' `7MM"""YMM  `7MMM.     ,MMF'  .g8""8q.       db        .M"""bgd 
+                      VMA   ,V     MM    `7    MMMb    dPMM  .dP'    `YM.    ;MM:      ,MI    "Y 
+                       VMA ,V      MM   d      M YM   ,M MM  dM'      `MM   ,V^MM.     `MMb.     
+                        VMMP       MM""MM      M  Mb  M' MM  MM        MM  ,M  `MM       `YMMNq. 
+                         MM        MM   Y      M  YM.P'  MM  MM.      ,MP  AbmmmqMA    .     `MM 
+                         MM        MM          M  `YM'   MM  `Mb.    ,dP' A'     VML   Mb     dM 
+                       .JMML.    .JMML.      .JML. `'  .JMML.  `"bmmd"' .AMA.   .AMMA .P"Ybmmd"  
 ```
 
 **Your First Minute On A Server** _(YFMOAS)_

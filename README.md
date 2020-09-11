@@ -18,7 +18,7 @@ _An Essential Security guide for Linux Servers_
 
 Hi! :wave: My name is [Remi Teeple](https://remi.works) and this guide is aimed to provide a consistent standard for server initialization and rollout. This guide was created from the perspective of a layman as security and hosting is not necessarily my forte. As such I wanted to consolidate my ideal server creation for my own reference but I figured I should share my methodology and ideology via GitHub for anyone to use. Originally inspired by the legendary ["My First 5 Minutes On A Server; Or, Essential Security for Linux Servers"](https://plusbryan.com/my-first-5-minutes-on-a-server-or-essential-security-for-linux-servers) my hope is to keep the information in said article relevant in a modern 2020 eco-system while adding additional security.
 
-This entire guide has been tested on Ubuntu 20.08 (&ARM).
+This guide was tested on Ubuntu `Ubuntu 20.04.1 LTS` (&ARM)
 
 If you aren't much for reading then please use [the included script]() to automate this entire guide.
 
@@ -27,10 +27,6 @@ If you aren't much for reading then please use [the included script]() to automa
 - [Your First Minute On A Server](#your-first-minute-on-a-server)
 - [Table of Contents :book:](#table-of-contents-book)
 - [Introduction :handshake:](#introduction-handshake)
-    - [System Hardening](#system-hardening)
-    - [Application Installation & Configuration](#application-installation--configuration)
-    - [Server Stability](#server-stability)
-    - [Guide Automation Script](#guide-automation-script)
 - [System Hardening :lock:](#system-hardening-lock)
   - [Creating a User](#creating-a-user)
   - [Changing Default Passwords](#changing-default-passwords)
@@ -44,6 +40,7 @@ If you aren't much for reading then please use [the included script]() to automa
   - [Securing Shared Memory](#securing-shared-memory)
   - [Disabling Root User](#disabling-root-user)
   - [Disabling IPv6](#disabling-ipv6)
+  - [Securing SYSCTL](#securing-sysctl)
   - [Setting Up Breach Detector (TODO: Test Me) http://bookofzeus.com/harden-ubuntu/software/install-breach-detector/](#setting-up-breach-detector-todo-test-me-httpbookofzeuscomharden-ubuntusoftwareinstall-breach-detector)
 - [Application Installation & Configuration :wrench:](#application-installation--configuration-wrench)
   - [Update Automation (**unattended-upgrades**)](#update-automation-unattended-upgrades)
@@ -66,19 +63,19 @@ This guide is split into **4 sections**. Each section can be used independently 
 
 **System Hardening**
 
-  * Covers hardening a fresh Linux Server with native commands and configurations to shrink the default attack surface.
+- Covers hardening a fresh Linux Server with native commands and configurations to shrink the default attack surface.
 
 **Application Installation & Configuration**
 
-  * This section covers the installation and configuration of software to assist in the hardening of the Linux server.
+- This section covers the installation and configuration of software to assist in the hardening of the Linux server.
 
 **Server Stability**
 
-  * Advice for maintaining server stability with regular up-keep tasks and some minor automation.
+- Advice for maintaining server stability with regular up-keep tasks and some minor automation.
 
 **Guide Automation Script**
 
-  * A simple explanation as to what the included script does to your machine and how to use it.
+- A simple explanation as to what the included script does to your machine and how to use it.
 
 Feel free to use whatever command line editor you like... For this guide all of the examples will be provided with `nano` usage.
 
@@ -230,11 +227,41 @@ The following are highly recommended additions to your `sshd_config` file, howev
 Add the following to the bottom of `sshd_config`:
 
 ```bash
-Port <YOUR_PORT_NUMBER>             # Changes the SSH Port
-PermitRootLogin no                  # Disallows Root Login (Login to user instead!)
-PermitEmptyPasswords no             # Ensures no user logon without password
-PasswordAuthentication no           # Disables password auth (enables SSH key auth)
-AllowUsers <YOUR_USER>@<YOUR_IP>    # Limit logins to specific users & IP's
+# SSH Protocol 1 has vulnerabilities
+Protocol 2
+# Changes the SSH Port
+Port <YOUR_PORT_NUMBER>
+# Enforce strict home directory and key file permissions
+StrictModes yes
+# Disallows Root Login (Login to user instead!)
+PermitRootLogin no
+# Ensures no user logon without password
+PermitEmptyPasswords no
+# Disables password auth (enables SSH key auth)
+PasswordAuthentication no
+# Disables SSH environment variables
+PermitUserEnvironment no
+# Display last login
+PrintLastLog no
+# Reduce latency
+UseDNS no
+# Sets the max number of unauthenticated connections to the SSH daemon
+MaxStartups 2
+# Disables host based authentication
+HostbasedAuthentication no
+
+# Disables .rhosts authentication
+IgnoreRhosts yes
+RhostsAuthentication no
+RhostsRSAAuthentication no
+RSAAuthentication yes
+
+# Prevent SSH tunnelling through a different port
+AllowTcpForwarding no
+X11Forwarding no
+
+# Limit logins to specific users and/or IP's
+AllowUsers <YOUR_USER>@<YOUR_IP>
 ```
 
 After we're done making changes the SSH service must be restarted to take said changes!
@@ -299,7 +326,7 @@ timedatectl set-timezone EST # Eastern Standard Time
 
 ## Setting Security Limits
 
-While rudimentary, [Fork Bomb](https://en.wikipedia.org/wiki/Fork_bomb) attacks are incredibly effective at causing system outages through means of a denial-of-service via resource starvation. To prevent such an attack from occuring on your Linux server the following **Security Limits** can be set...
+While rudimentary, [Fork Bomb](https://en.wikipedia.org/wiki/Fork_bomb) attacks are incredibly effective at causing system outages through means of a denial-of-service via resource starvation. To prevent such an attack from occurring on your Linux server the following **Security Limits** can be set...
 
 Open `/etc/security/limits.conf`:
 
@@ -315,11 +342,14 @@ Add this to the bottom of `/etc/security/limits.conf`:
 * hard nproc 500
 ```
 
-"\*" represents the users, in this case all. "hard" sets a hard limit to the number of processes. "nproc" defines that we are limiting the number of processes. "500" is the maximum number of processes that a user can have.
+- "\*" represents the users, in this case all.
+- "hard" sets a hard limit to the number of processes.
+- "nproc" defines that we are limiting the number of processes.
+- "500" is the maximum number of processes that a user can have.
 
 ## Securing Shared Memory
 
-Shared memory is a performant mehtod of passing data between running programs. Shared memory allows multiple processes to share the same space in memory, because of this bad actors could poteintially snoop process information from running services via the default read / write `/run/shm` space. To mitigate this we make the `/run/shm` space read-only.
+Shared memory is a performant method of passing data between running programs. Shared memory allows multiple processes to share the same space in memory, because of this bad actors could potentially snoop process information from running services via the default read / write `/run/shm` space. To mitigate this we make the `/run/shm` space read-only.
 
 In short, shared memory opens an attack vector against running services, securing shared memory prevents this from happening.
 
@@ -381,6 +411,102 @@ net.ipv6.conf.lo.disable_ipv6 = 1
 ```
 
 Finally, reload the configuration:
+
+```bash
+sudo sysctl -p
+```
+
+## Securing SYSCTL
+
+The `/etc/sysctl.conf` file is used to configure kernel parameters at runtime. Linux reads and applies settings from the `/etc/sysctl.conf` file.
+
+The settings in `/etc/sysctl.conf` can:
+
+- Limit network-transmitted configuration for IPv4.
+- Limit network-transmitted configuration for IPv6.
+- Enable execshield protection.
+- Prevent against the common 'syn flood attack'.
+- Enable source IP address verification.
+- Prevents a cracker from using a spoofing attack against the IP address of the server.
+- Log several types of suspicious packets, such as spoofed packets, source-routed packets, and redirects.
+
+To enable these settings enable the following in your `/etc/sysctl.conf`:
+
+```bash
+# Controls IP packet forwarding
+net.ipv4.ip_forward = 0
+
+# IP Spoofing protection
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.default.rp_filter = 1
+
+# Ignore ICMP broadcast requests
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+
+# Disable source packet routing
+net.ipv4.conf.all.accept_source_route = 0
+net.ipv6.conf.all.accept_source_route = 0
+net.ipv4.conf.default.accept_source_route = 0
+net.ipv6.conf.default.accept_source_route = 0
+
+# Ignore send redirects
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.default.send_redirects = 0
+
+# Block SYN attacks
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_max_syn_backlog = 2048
+net.ipv4.tcp_synack_retries = 2
+net.ipv4.tcp_syn_retries = 5
+
+# Log Martians
+net.ipv4.conf.all.log_martians = 1
+net.ipv4.icmp_ignore_bogus_error_responses = 1
+
+# Ignore ICMP redirects
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv6.conf.all.accept_redirects = 0
+net.ipv4.conf.default.accept_redirects = 0
+net.ipv6.conf.default.accept_redirects = 0
+
+# Ignore Directed pings
+net.ipv4.icmp_echo_ignore_all = 1
+
+# Accept Redirects? No, this is not router
+net.ipv4.conf.all.secure_redirects = 0
+
+# Log packets with impossible addresses to kernel log? yes
+net.ipv4.conf.default.secure_redirects = 0
+
+#Enable ExecShield protection
+kernel.exec-shield = 1
+kernel.randomize_va_space = 1
+
+########## IPv6 networking start ##############
+# Number of Router Solicitations to send until assuming no routers are present.
+# This is host and not router
+net.ipv6.conf.default.router_solicitations = 0
+
+# Accept Router Preference in RA?
+net.ipv6.conf.default.accept_ra_rtr_pref = 0
+
+# Learn Prefix Information in Router Advertisement
+net.ipv6.conf.default.accept_ra_pinfo = 0
+
+# Setting controls whether the system will accept Hop Limit settings from a router advertisement
+net.ipv6.conf.default.accept_ra_defrtr = 0
+
+# Router advertisements can cause the system to assign a global unicast address to an interface
+net.ipv6.conf.default.autoconf = 0
+
+# How many neighbor solicitations to send out per address?
+net.ipv6.conf.default.dad_transmits = 0
+
+# How many global unicast IPv6 addresses can be assigned to each interface?
+net.ipv6.conf.default.max_addresses = 1
+
+########## IPv6 networking ends ##############
+```
 
 ```bash
 sudo sysctl -p
@@ -511,7 +637,7 @@ sudo clamscan -r --remove /
 
 ## iptables Intrusion Detection & Prevention (**PSAD**)
 
-[PSAD](https://cipherdyne.org/psad/) is an intrusion prevention tool similiar to **Fail2ban** however, while Fail2ban detects and blocks on a application level, **PSAD** blocks on an iptables level via log messages.
+[PSAD](https://cipherdyne.org/psad/) is an intrusion prevention tool similar to **Fail2ban** however, while Fail2ban detects and blocks on a application level, **PSAD** blocks on an iptables level via log messages.
 
 > "Fail2BAN scans log files of various applications such as apache, ssh or ftp and automatically bans IPs that show the malicious signs such as automated login attempts. PSAD on the other hand scans iptables and ip6tables log messages (typically /var/log/messages) to detect and optionally block scans and other types of suspect traffic such as DDoS or OS fingerprinting attempts. It's ok to use both programs at the same time because they operate on different level." - [FINESEC](https://serverfault.com/a/447604/289829)
 
@@ -540,7 +666,7 @@ Add the following to the end of each file **BEFORE THE COMMIT LINE**:
 ```bash
 # Log all traffic so PSAD can analyze it.
 -A INPUT -j LOG --log-tcp-options --log-prefix "[IPTABLES] "
--A FORWARD -j LOG --log-tcp-options --log-prefix "[IPTABLES] "
+-A FORWARD -j LOG --log-tcp-options --log-prefix "[IPTABLES]"
 ```
 
 Reload UFW and psad
@@ -629,7 +755,7 @@ sudo apt-get autoremove && sudo apt-get autoclean
 
 ## Reboot on Out Of Memory
 
-Occassionally it can be helpful to have the system automatically reboot if it runs out of memory. To enable this and prevent downtime and outages do the following...
+Occasionally it can be helpful to have the system automatically reboot if it runs out of memory. To enable this and prevent downtime and outages do the following...
 
 Open `/etc/sysctl.conf`:
 
@@ -640,7 +766,9 @@ sudo nano /etc/sysctl.conf
 Add the following lines to the end of the file:
 
 ```bash
+# Panic on OOM (Out Of Memory)
 vm.panic_on_oom=1
+# Wait 10 seconds before reboot
 kernel.panic=10
 ```
 

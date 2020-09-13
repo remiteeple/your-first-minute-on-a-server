@@ -39,8 +39,8 @@ If you aren't much for reading then please use [the included script]() to automa
   - [Setting Security Limits](#setting-security-limits)
   - [Securing Shared Memory](#securing-shared-memory)
   - [Disabling Root User](#disabling-root-user)
-  - [Disabling IPv6](#disabling-ipv6)
   - [Securing SYSCTL](#securing-sysctl)
+  - [Disabling IPv6](#disabling-ipv6)
 - [Application Installation & Configuration :wrench:](#application-installation--configuration-wrench)
   - [Update Automation (**unattended-upgrades**)](#update-automation-unattended-upgrades)
   - [Checking for Rootkits (**chkrootkit** & **rkhunter**)](#checking-for-rootkits-chkrootkit--rkhunter)
@@ -399,31 +399,6 @@ To enable the root user use the following command:
 sudo passwd -u root
 ```
 
-## Disabling IPv6
-
-IPv6 currently poses a huge attack surface to most existing machines that are internet connected. As such disabling IPv6 entirely is a suitable option in some cases. While entirely dependant on the purpose of the server, it is recommended to disable IPv6 communications unless they are vital to hosting.
-
-To disable IPv6 we first open the `/etc/sysctl.conf` file:
-
-```bash
-sudo nano /etc/sysctl.conf
-```
-
-Then add the following at the bottom of the `/etc/sysctl.conf` file:
-
-```bash
-# Disable IPv6
-net.ipv6.conf.all.disable_ipv6 = 1
-net.ipv6.conf.default.disable_ipv6 = 1
-net.ipv6.conf.lo.disable_ipv6 = 1
-```
-
-Finally, reload the configuration:
-
-```bash
-sudo sysctl -p
-```
-
 ## Securing SYSCTL
 
 The `/etc/sysctl.conf` file is used to configure kernel parameters at runtime. By modifying specific parameters in the `/etc/sysctl.conf` file we can establish higher kernel level security in a Linux environment. Each parameter included in this example `/etc/sysctl.conf` is my personal recommendation, I implore that you to seek out each setting to get a better understanding of the possible values they can each be set to so you can create a customized configuration tailored to your server requirements. _These settings are catered to Ubuntu 20.08 LTS ARM with Docker._
@@ -441,9 +416,8 @@ The settings in `/etc/sysctl.conf` can:
 To enable these settings enable the following in your `/etc/sysctl.conf`:
 
 ```bash
-#########################################################################################
-### Inspired by https://www.kmotoko.com/articles/linux-hardening-kernel-parameters-with-sysctl/
-### Docker support from https://bugs.launchpad.net/ubuntu/+source/procps/+bug/1676540
+# Inspired by: https://www.kmotoko.com/articles/linux-hardening-kernel-parameters-with-sysctl/
+# Docker support: https://bugs.launchpad.net/ubuntu/+source/procps/+bug/1676540
 
 ########################
 ### SYSTEM STABILITY ###
@@ -487,7 +461,7 @@ net.ipv4.tcp_synack_retries = 2
 net.ipv4.tcp_max_syn_backlog = 4096
 
 # Disable packet forwarding
-# This disables mc_forwarding as well; writing to mc_forwarding causes an errornet.ipv4.ip_forward = 0
+# This disables mc_forwarding as well; writing to mc_forwarding causes an error net.
 #net.ipv4.conf.all.forwarding = 0
 net.ipv4.conf.default.forwarding = 0
 #net.ipv6.conf.all.forwarding = 0
@@ -538,10 +512,34 @@ net.ipv4.icmp_echo_ignore_broadcasts = 1
 # ENSURE THIS IS AT THE END
 net.ipv4.route.flush = 1
 net.ipv6.route.flush = 1
-#########################################################################################
 ```
 
 > **NOTE**: Some of the settings above are commented out because they interfere with Docker Engine. For increased security at the sacrifice of some usability uncomment the extra kernel instructions.
+
+## Disabling IPv6
+
+IPv6 currently poses a huge attack surface to most existing machines that are internet connected. As such disabling IPv6 entirely is a suitable option in some cases. While entirely dependant on the purpose of the server, it is recommended to disable IPv6 communications unless they are vital to hosting.
+
+To disable IPv6 we first open the `/etc/sysctl.conf` file:
+
+```bash
+sudo nano /etc/sysctl.conf
+```
+
+Then add the following at the bottom of the `/etc/sysctl.conf` file:
+
+```bash
+# Disable all IPv6 communications
+net.ipv6.conf.all.disable_ipv6 = 1
+net.ipv6.conf.default.disable_ipv6 = 1
+net.ipv6.conf.lo.disable_ipv6 = 1
+```
+
+Finally, reload the configuration:
+
+```bash
+sudo sysctl -p
+```
 
 # Application Installation & Configuration :wrench:
 
@@ -828,7 +826,7 @@ I made this as a reference for myself to quickly setup servers whenever I need o
 
 > Would this work on a Raspberry Pi?
 
-Yes! In fact majority of this guide was specifically created to cater to my needs when creating Raspberry Pi servers. I'd recommend using this [nifty little tool](https://github.com/Hexxeh/rpi-update) to ensure that you RPI stays up to date firmware wise!
+Yes! In fact majority of this guide was specifically created to cater to my needs when creating Raspberry Pi servers. I'd recommend using this [nifty little tool](https://github.com/Hexxeh/rpi-update) to ensure that you RPI stays up to date firmware wise! Alternatively (and arguable a much safer method for updating firmware) is to use the same tool pre-install from a Raspberry PI OS image. I suggest you keep a Micro SD card kicking around loaded with Raspberry PI OS for this specific reason.
 
 Have more questions? Feel free to ask!
 

@@ -41,7 +41,6 @@ If you aren't much for reading then please use [the included script]() to automa
   - [Disabling Root User](#disabling-root-user)
   - [Disabling IPv6](#disabling-ipv6)
   - [Securing SYSCTL](#securing-sysctl)
-  - [Setting Up Breach Detector (TODO: Test Me) http://bookofzeus.com/harden-ubuntu/software/install-breach-detector/](#setting-up-breach-detector-todo-test-me-httpbookofzeuscomharden-ubuntusoftwareinstall-breach-detector)
 - [Application Installation & Configuration :wrench:](#application-installation--configuration-wrench)
   - [Update Automation (**unattended-upgrades**)](#update-automation-unattended-upgrades)
   - [Checking for Rootkits (**chkrootkit** & **rkhunter**)](#checking-for-rootkits-chkrootkit--rkhunter)
@@ -51,7 +50,6 @@ If you aren't much for reading then please use [the included script]() to automa
   - [System Logging (**Logwatch**)](#system-logging-logwatch)
 - [System Stability :triangular_ruler:](#system-stability-triangular_ruler)
   - [Cleaning Installed Packages](#cleaning-installed-packages)
-  - [Reboot on Out Of Memory](#reboot-on-out-of-memory)
 - [Guide Automation Script :scroll:](#guide-automation-script-scroll)
 - [Conclusion :wave:](#conclusion-wave)
 - [Q&A :grey_question:](#qa-grey_question)
@@ -59,7 +57,7 @@ If you aren't much for reading then please use [the included script]() to automa
 
 # Introduction :handshake:
 
-This guide is split into **4 sections**. Each section can be used independently of one another and will provide explanations as to what each step does. I've catered this guide to Ubuntu / Debian architecture but many of the principles and configurations will work on any Linux Distribution.
+This guide is split into **4 sections**. Each section can be used independently of one another and will provide explanations as to what each step does. I've catered this guide to Ubuntu / Debian architecture but many of the principles and configurations will work on any Linux Distribution. If you plan to have your server be internet facing then this guide is a good baseline for security.
 
 **System Hardening**
 
@@ -229,24 +227,34 @@ Add the following to the bottom of `sshd_config`:
 ```bash
 # SSH Protocol 1 has vulnerabilities
 Protocol 2
+
 # Changes the SSH Port
 Port <YOUR_PORT_NUMBER>
+
 # Enforce strict home directory and key file permissions
 StrictModes yes
+
 # Disallows Root Login (Login to user instead!)
 PermitRootLogin no
+
 # Ensures no user logon without password
 PermitEmptyPasswords no
+
 # Disables password auth (enables SSH key auth)
 PasswordAuthentication no
+
 # Disables SSH environment variables
 PermitUserEnvironment no
+
 # Display last login
 PrintLastLog no
+
 # Reduce latency
 UseDNS no
+
 # Sets the max number of unauthenticated connections to the SSH daemon
 MaxStartups 2
+
 # Disables host based authentication
 HostbasedAuthentication no
 
@@ -256,12 +264,12 @@ RhostsAuthentication no
 RhostsRSAAuthentication no
 RSAAuthentication yes
 
-# Prevent SSH tunnelling through a different port
+# Prevent SSH tunnelling other ports
 AllowTcpForwarding no
 X11Forwarding no
 
 # Limit logins to specific users and/or IP's
-AllowUsers <YOUR_USER>@<YOUR_IP>
+AllowUsers <USER>@<IP>
 ```
 
 After we're done making changes the SSH service must be restarted to take said changes!
@@ -418,121 +426,122 @@ sudo sysctl -p
 
 ## Securing SYSCTL
 
-The `/etc/sysctl.conf` file is used to configure kernel parameters at runtime. Linux reads and applies settings from the `/etc/sysctl.conf` file.
+The `/etc/sysctl.conf` file is used to configure kernel parameters at runtime. By modifying specific parameters in the `/etc/sysctl.conf` file we can establish higher kernel level security in a Linux environment. Each parameter included in this example `/etc/sysctl.conf` is my personal recommendation, I implore that you to seek out each setting to get a better understanding of the possible values they can each be set to so you can create a customized configuration tailored to your server requirements. _These settings are catered to Ubuntu 20.08 LTS ARM with Docker._
 
 The settings in `/etc/sysctl.conf` can:
 
 - Limit network-transmitted configuration for IPv4.
 - Limit network-transmitted configuration for IPv6.
-- Enable execshield protection.
-- Prevent against the common 'syn flood attack'.
-- Enable source IP address verification.
-- Prevents a cracker from using a spoofing attack against the IP address of the server.
-- Log several types of suspicious packets, such as spoofed packets, source-routed packets, and redirects.
+- Prevent against 'syn flood` attacks
+- Enable source IP verification.
+- Prevent spoofing attacks against the IP address of the server.
+- Log several types of suspicious packets. _(spoofed packets, source-routed packets, redirects, etc)_
+- Automatically reboot on OOM (Out Of Memory) Kernel Panic.
 
 To enable these settings enable the following in your `/etc/sysctl.conf`:
 
 ```bash
-# Controls IP packet forwarding
-net.ipv4.ip_forward = 0
+#########################################################################################
+### Inspired by https://www.kmotoko.com/articles/linux-hardening-kernel-parameters-with-sysctl/
+### Docker support from https://bugs.launchpad.net/ubuntu/+source/procps/+bug/1676540
 
-# IP Spoofing protection
+########################
+### SYSTEM STABILITY ###
+########################
+
+# Reboot on Out Of Memory
+# Kernel will wait 10 seconds before PANIC
+vm.panic_on_oom = 1
+kernel.panic = 10
+
+#######################
+### SYSTEM SECURITY ###
+#######################
+
+# Enable address space randomization
+kernel.randomize_va_space = 2
+
+# Restrict core dumps
+fs.suid_dumpable = 0
+
+# Hide kernel pointers
+kernel.kptr_restrict = 1
+
+# Restrict access to kernel logs
+kernel.dmesg_restrict = 1
+
+# Restrict ptrace scope
+kernel.yama.ptrace_scope = 1
+
+########################
+### NETWORK SECURITY ###
+########################
+
+# Harden BPF JIT compiler
+net.core.bpf_jit_harden = 1
+
+# Prevent SYN attack, enable SYNcookies (they will kick-in when the max_syn_backlog reached)
+net.ipv4.tcp_syncookies = 1
+net.ipv4.tcp_syn_retries = 2
+net.ipv4.tcp_synack_retries = 2
+net.ipv4.tcp_max_syn_backlog = 4096
+
+# Disable packet forwarding
+# This disables mc_forwarding as well; writing to mc_forwarding causes an errornet.ipv4.ip_forward = 0
+#net.ipv4.conf.all.forwarding = 0
+net.ipv4.conf.default.forwarding = 0
+#net.ipv6.conf.all.forwarding = 0
+net.ipv6.conf.default.forwarding = 0
+
+# Enable IP spoofing protection
+# Turn on source route verification
 net.ipv4.conf.all.rp_filter = 1
 net.ipv4.conf.default.rp_filter = 1
 
-# Ignore ICMP broadcast requests
-net.ipv4.icmp_echo_ignore_broadcasts = 1
-
-# Disable source packet routing
-net.ipv4.conf.all.accept_source_route = 0
-net.ipv6.conf.all.accept_source_route = 0
-net.ipv4.conf.default.accept_source_route = 0
-net.ipv6.conf.default.accept_source_route = 0
-
-# Ignore send redirects
-net.ipv4.conf.all.send_redirects = 0
-net.ipv4.conf.default.send_redirects = 0
-
-# Block SYN attacks
-net.ipv4.tcp_syncookies = 1
-net.ipv4.tcp_max_syn_backlog = 2048
-net.ipv4.tcp_synack_retries = 2
-net.ipv4.tcp_syn_retries = 5
-
-# Log Martians
-net.ipv4.conf.all.log_martians = 1
-net.ipv4.icmp_ignore_bogus_error_responses = 1
-
-# Ignore ICMP redirects
-net.ipv4.conf.all.accept_redirects = 0
-net.ipv6.conf.all.accept_redirects = 0
+# Do not accept ICMP redirects (prevent MITM attacks)
+# This removes the secure_redirects sysctlnet.ipv4.conf.all.accept_redirects = 0
 net.ipv4.conf.default.accept_redirects = 0
+#net.ipv4.conf.all.secure_redirects = 0
+#net.ipv4.conf.default.secure_redirects = 0
 net.ipv6.conf.default.accept_redirects = 0
 
-# Ignore Directed pings
-net.ipv4.icmp_echo_ignore_all = 1
+# Do not send ICMP redirects (we are not a router)
+#net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.default.send_redirects = 0
+#net.ipv4.conf.all.send_redirects = 0
+net.ipv6.conf.default.send_redirects = 0
 
-# Accept Redirects? No, this is not router
-net.ipv4.conf.all.secure_redirects = 0
+# Do not accept IP source route packets (we are not a router)
+#net.ipv4.conf.all.accept_source_route = 0
+net.ipv4.conf.default.accept_source_route = 0
+#net.ipv6.conf.all.accept_source_route = 0
+net.ipv6.conf.default.accept_source_route = 0
 
-# Log packets with impossible addresses to kernel log? yes
-net.ipv4.conf.default.secure_redirects = 0
+# Don't relay bootp
+net.ipv4.conf.all.bootp_relay = 0
 
-#Enable ExecShield protection
-kernel.exec-shield = 1
-kernel.randomize_va_space = 1
+# Disable proxy ARP
+net.ipv4.conf.all.proxy_arp = 0
+net.ipv4.conf.all.arp_ignore = 1
+net.ipv4.conf.all.arp_announce = 2
 
-########## IPv6 networking start ##############
-# Number of Router Solicitations to send until assuming no routers are present.
-# This is host and not router
-net.ipv6.conf.default.router_solicitations = 0
+# Mitigate time-wait assassination hazards in TCP
+net.ipv4.tcp_rfc1337 = 1
 
-# Accept Router Preference in RA?
-net.ipv6.conf.default.accept_ra_rtr_pref = 0
+# Enable bad error message Protection
+net.ipv4.icmp_ignore_bogus_error_responses = 1
 
-# Learn Prefix Information in Router Advertisement
-net.ipv6.conf.default.accept_ra_pinfo = 0
+# Enable ignoring broadcasts request
+net.ipv4.icmp_echo_ignore_broadcasts = 1
 
-# Setting controls whether the system will accept Hop Limit settings from a router advertisement
-net.ipv6.conf.default.accept_ra_defrtr = 0
-
-# Router advertisements can cause the system to assign a global unicast address to an interface
-net.ipv6.conf.default.autoconf = 0
-
-# How many neighbor solicitations to send out per address?
-net.ipv6.conf.default.dad_transmits = 0
-
-# How many global unicast IPv6 addresses can be assigned to each interface?
-net.ipv6.conf.default.max_addresses = 1
-
-########## IPv6 networking ends ##############
+# Ensure that subsequent connections use the new values
+# ENSURE THIS IS AT THE END
+net.ipv4.route.flush = 1
+net.ipv6.route.flush = 1
+#########################################################################################
 ```
 
-```bash
-sudo sysctl -p
-```
-
-## Setting Up Breach Detector (TODO: Test Me) http://bookofzeus.com/harden-ubuntu/software/install-breach-detector/
-
-In the event of an account breach on your system, this simple `.bash_profile` script will help log the IP address of whoever logs in to the user.
-
-Open or create `.bash_profile`:
-
-```bash
-nano .bash_profile
-```
-
-Add the following to `.bash_profile`:
-
-```bash
-echo 'ACCESS GRANTED on:' `date` `who` | mail -s "ACCESS GRANTED from `who | awk '{print $6}'`" <YOUR>@<EMAIL>.com
-```
-
-The following will automatically append the script to the `.bash_profile`, creating the file if it does not already exist:
-
-```bash
-echo ''ALERT - ACCESS GRANTED on:' `date` `who` | mail -s "ACCESS GRANTED from `who | awk '{print $6}'`" <YOUR>@<EMAIL>.com' >> ~/.bash_profile
-```
+> **NOTE**: Some of the settings above are commented out because they interfere with Docker Engine. For increased security at the sacrifice of some usability uncomment the extra kernel instructions.
 
 # Application Installation & Configuration :wrench:
 
@@ -641,7 +650,7 @@ sudo clamscan -r --remove /
 
 > "Fail2BAN scans log files of various applications such as apache, ssh or ftp and automatically bans IPs that show the malicious signs such as automated login attempts. PSAD on the other hand scans iptables and ip6tables log messages (typically /var/log/messages) to detect and optionally block scans and other types of suspect traffic such as DDoS or OS fingerprinting attempts. It's ok to use both programs at the same time because they operate on different level." - [FINESEC](https://serverfault.com/a/447604/289829)
 
-As always, the first step is to install the application:
+The first step is to install `psad`:
 
 ```bash
 sudo apt-get install psad
@@ -669,7 +678,7 @@ Add the following to the end of each file **BEFORE THE COMMIT LINE**:
 -A FORWARD -j LOG --log-tcp-options --log-prefix "[IPTABLES]"
 ```
 
-Reload UFW and psad
+Reload `UFW` and `psad`
 
 ```bash
 sudo ufw reload
@@ -753,28 +762,11 @@ Execute the following command to automatically remove and clean unused packages:
 sudo apt-get autoremove && sudo apt-get autoclean
 ```
 
-## Reboot on Out Of Memory
-
-Occasionally it can be helpful to have the system automatically reboot if it runs out of memory. To enable this and prevent downtime and outages do the following...
-
-Open `/etc/sysctl.conf`:
-
-```bash
-sudo nano /etc/sysctl.conf
-```
-
-Add the following lines to the end of the file:
-
-```bash
-# Panic on OOM (Out Of Memory)
-vm.panic_on_oom=1
-# Wait 10 seconds before reboot
-kernel.panic=10
-```
-
 > **NOTE**: "vm.panic_on_oom=1" line enables panic on OOM; the "kernel.panic=10" line tells the kernel to reboot ten seconds after panicking.
 
 # Guide Automation Script :scroll:
+
+**THIS SECTION AND THE SCRIPT ARE CURRENTLY W.I.P**
 
 This script is intended to act as an automation tool for this guide. As such I highly recommended you read through the guide before executing the script. This script is not meant to supplement the guide, or meant to be done as a final step. Instead this script IS the guide. Please only modify your system **AFTER RUNNING THE SCRIPT**.
 
@@ -808,6 +800,8 @@ YFMOAS was named such because I wanted to compete directly with the much popular
 
 > Do you have any additional resources?
 
+These are the resources that I would normally frequent to get a system secure. Please note that some of the articles are quite dated now. Don't blindly follow any of these as it may result in system instability.
+
 - http://bookofzeus.com/
 - https://gist.github.com/lokhman/cc716d2e2d373dd696b2d9264c0287a3
 - https://github.com/imthenachoman/How-To-Secure-A-Linux-Server
@@ -816,10 +810,13 @@ YFMOAS was named such because I wanted to compete directly with the much popular
 - https://www.digitalocean.com/community/tutorials/how-to-set-up-ssh-keys-on-ubuntu-20-04
 - https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-20-04
 - https://plusbryan.com/my-first-5-minutes-on-a-server-or-essential-security-for-linux-servers
+- https://www.kmotoko.com/articles/linux-hardening-kernel-parameters-with-sysctl/
 
+> I would like to contribute.
+> | |
 > I found an issue with the guide.
 
-Please contact me immediately via [remi@teeple.xyz](mailto:remi@teeple.xyz). I am currently in the process of understanding GitHub's core systems better so I will likely allow contributors in the near future.
+Please contact me immediately via [remi@teeple.xyz](mailto:remi@teeple.xyz). I am currently in the process of getting a better understanding of GitHub's core systems so I will likely allow contributors in the near future.
 
 > Something broke and I need help!
 

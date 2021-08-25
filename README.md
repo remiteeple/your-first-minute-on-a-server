@@ -16,7 +16,7 @@
 
 _An Essential Security guide for Linux Servers_
 
-Hi! :wave: My name is [Remi Teeple](https://remi.works) and this guide is aimed to provide a consistent standard for server initialization and rollout. This guide was created from the perspective of a layman as security and hosting is not necessarily my forte. As such I wanted to consolidate my ideal server creation for my own reference but I figured I should share my methodology and ideology via GitHub for anyone to use. Originally inspired by the legendary ["My First 5 Minutes On A Server; Or, Essential Security for Linux Servers"](https://plusbryan.com/my-first-5-minutes-on-a-server-or-essential-security-for-linux-servers) my hope is to keep the information in said article relevant in a modern 2020 eco-system while adding additional security.
+Hi! :wave: My name is [Remi Teeple](https://remi.works) and this guide is aimed to provide a consistent standard for server initialization and rollout. This guide was created from the perspective of a layman as security and hosting are not necessarily my forte. As such I wanted to consolidate my ideal server creation for my reference but I figured I should share my methodology and ideology via GitHub for anyone to use. Originally inspired by the legendary ["My First 5 Minutes On A Server; Or, Essential Security for Linux Servers"](https://plusbryan.com/my-first-5-minutes-on-a-server-or-essential-security-for-linux-servers) I hope to keep the information in said article relevant in a modern 2020 eco-system while adding additional security.
 
 This guide was tested on Ubuntu `Ubuntu 20.04.1 LTS` (&ARM)
 
@@ -57,7 +57,7 @@ If you aren't much for reading then please use [the included script]() to automa
 
 # Introduction :handshake:
 
-This guide is split into **4 sections**. Each section can be used independently of one another and will provide explanations as to what each step does. I've catered this guide to Ubuntu / Debian architecture but many of the principles and configurations will work on any Linux Distribution. If you plan to have your server be internet facing then this guide is a good baseline for security.
+This guide is split into **4 sections**. Each section can be used independently of one another and will provide explanations as to what each step does. I've catered this guide to Ubuntu / Debian architecture but many of the principles and configurations will work on any Linux Distribution. If you plan to have your server be internet-facing then this guide is a good baseline for security.
 
 **System Hardening**
 
@@ -75,13 +75,13 @@ This guide is split into **4 sections**. Each section can be used independently 
 
 - A simple explanation as to what the included script does to your machine and how to use it.
 
-Feel free to use whatever command line editor you like... For this guide all of the examples will be provided with `nano` usage.
+Feel free to use whatever command-line editor you like... For this guide, all of the examples will be provided with `nano` usage.
 
 # System Hardening :lock:
 
-**System Hardening** is the process of securing a system's settings and configuration files in attempt to minimize threat vulnerability and the possibility of compromise. **System Hardening** is done by shrinking the attack surface to reduce the amount of attack vectors a bad actor might attempt to exploit.
+**System Hardening** is the process of securing a system's settings and configuration files in an attempt to minimize threat vulnerability and the possibility of compromise. **System Hardening** is done by shrinking the attack surface to reduce the number of attack vectors a bad actor might attempt to exploit.
 
-A commonality of many default systems is an exposure to various threats. By using this guide we will minimize the attack surface for a brand new Linux server.
+A commonality of many default systems is exposure to various threats. By using this guide we will minimize the attack surface for a brand new Linux server.
 
 ## Creating a User
 
@@ -111,7 +111,7 @@ passwd
 
 ## Updating and Upgrading
 
-Once the system is alive and well it's important to ensure that we are up to date. By updating the packages on our system we mitigate the risk of leaving vulnerabilities un-patched.
+Once the system is alive and well it's important to ensure that we are up to date. By updating the packages on our system we mitigate the risk of leaving vulnerabilities unpatched.
 
 To update our package lists and upgrade any outdated packages we run the following:
 
@@ -150,12 +150,12 @@ After saving the key pair's location you will see the following prompt:
 ```bash
 # Console Output
 Enter passphrase (empty for no passphrase):
-Enter same passphrase again:
+Enter the same passphrase again:
 ```
 
 > **NOTE:** Though _technically_ optional, a **secure passphrase** is highly recommended.
 
-Your key pair should now generate and display and output similar to the following:
+Your key pair should now generate and display an output similar to the following:
 
 ```bash
 # Console Output
@@ -213,7 +213,7 @@ PasswordAuthentication no # Disables password authentication (this enables SSH k
 
 ## Securing SSH
 
-The default SSH port _(22)_ is an easy target for most bad actors. To help mitigate the amount of hits you might receive against a public facing SSH port, you can change it to a non-standard port. Ensure that the port that you change SSH to is not already in use, that is typically a port **above 1024**... Here [is a list](https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Well-known_ports) of ports to avoid. Ultimately, changing your SSH port will stop only a few scanners from hitting the port so it is an optional but recommended step.
+The default SSH port _(22)_ is an easy target for most bad actors. To help mitigate the number of hits you might receive against a public-facing SSH port, you can change it to a non-standard port. Ensure that the port that you change SSH to is not already in use, that is typically a port **above 1024**... Here [is a list](https://en.wikipedia.org/wiki/List_of_TCP_and_UDP_port_numbers#Well-known_ports) of ports to avoid. Ultimately, changing your SSH port will stop only a few scanners from hitting the port so it is an optional but recommended step.
 
 Open `/etc/ssh/sshd_config`:
 
@@ -221,7 +221,7 @@ Open `/etc/ssh/sshd_config`:
 sudo nano /etc/ssh/sshd_config
 ```
 
-The following are highly recommended additions to your `sshd_config` file, however they are each optional. As such a comment explaining their action has been added next to each.
+The following are highly recommended additions to your `sshd_config` file, however, they are each optional. As such a comment explaining their action has been added next to each.
 Add the following to the bottom of `sshd_config`:
 
 ```bash
@@ -234,7 +234,7 @@ Port <YOUR_PORT_NUMBER>
 # Enforce strict home directory and key file permissions
 StrictModes yes
 
-# Disallows Root Login (Login to user instead!)
+# Disallows Root Login (Login to a user instead!)
 PermitRootLogin no
 
 # Ensures no user logon without password
@@ -255,7 +255,7 @@ UseDNS no
 # Sets the max number of unauthenticated connections to the SSH daemon
 MaxStartups 2
 
-# Disables host based authentication
+# Disables host-based authentication
 HostbasedAuthentication no
 
 # Disables .rhosts authentication
@@ -264,7 +264,7 @@ RhostsAuthentication no
 RhostsRSAAuthentication no
 RSAAuthentication yes
 
-# Prevent SSH tunnelling other ports
+# Prevent SSH tunneling other ports
 AllowTcpForwarding no
 X11Forwarding no
 
@@ -294,13 +294,13 @@ sudo ufw default allow outgoing # Alternatively "deny" depending on server prere
 sudo ufw default deny incoming
 ```
 
-The first policy to set is to allow SSH access, otherwise you may inadvertently lock yourself out of the system. (Physical logins would still work.)
+The first policy to set is to allow SSH access, otherwise, you may inadvertently lock yourself out of the system. (Physical logins would still work.)
 
 ```bash
 sudo ufw limit in ssh # Ideally setup more script policies to limit who can connect via SSH
 ```
 
-> **NOTE**: "limit in" limits the amount of inbound connections that are allowed. Alternatively "allow" can be used if lots of SSH connections are expected.
+> **NOTE**: "limit in" limits the number of inbound connections that are allowed. Alternatively "allow" can be used if lots of SSH connections are expected.
 
 Once the initial policies have been put in place, you can start `UFW`
 
@@ -342,7 +342,7 @@ Open `/etc/security/limits.conf`:
 sudo nano /etc/security/limits.conf
 ```
 
-The file explains how to setup specific user and group limits. If you want a simple solution to limit the amount of all user and group processes use the following.
+The file explains how to set up specific user and group limits. If you want a simple solution to limit the amount of all user and group processes use the following.
 
 Add this to the bottom of `/etc/security/limits.conf`:
 
@@ -350,18 +350,18 @@ Add this to the bottom of `/etc/security/limits.conf`:
 * hard nproc 500
 ```
 
-- "\*" represents the users, in this case all.
-- "hard" sets a hard limit to the number of processes.
+- "\*" represents the users, in this case, all.
+- "hard" set a hard limit to the number of processes.
 - "nproc" defines that we are limiting the number of processes.
 - "500" is the maximum number of processes that a user can have.
 
 ## Securing Shared Memory
 
-Shared memory is a performant method of passing data between running programs. Shared memory allows multiple processes to share the same space in memory, because of this bad actors could potentially snoop process information from running services via the default read / write `/run/shm` space. To mitigate this we make the `/run/shm` space read-only.
+Shared memory is a performant method of passing data between running programs. Shared memory allows multiple processes to share the same space in memory, because of this bad actors could potentially snoop process information from running services via the default read/write `/run/shm` space. To mitigate this we make the `/run/shm` space read-only.
 
 In short, shared memory opens an attack vector against running services, securing shared memory prevents this from happening.
 
-To secure shared memory, first open your `/etc/fstab` file:
+To secure shared memory, first, open your `/etc/fstab` file:
 
 ```bash
 sudo nano /etc/fstab
@@ -379,11 +379,11 @@ Once you save the changes exit and reboot your system:
 sudo shutdown -r now
 ```
 
-> **NOTE**: If you're following along with the guide you can wait until the end to preform this action.
+> **NOTE**: If you're following along with the guide you can wait until the end to perform this action.
 
 ## Disabling Root User
 
-Disabling the root account is a safe action that removes the poteintial risk of a bad actor gaining access to it. We disable the account instead of removing it as that may cause issues if for whatever reason the root user is later needed.
+Disabling the root account is a safe action that removes the potential risk of a bad actor gaining access to it. We disable the account instead of removing it as that may cause issues if for whatever reason the root user is later needed.
 
 To disable the root user use the following command:
 
@@ -401,7 +401,7 @@ sudo passwd -u root
 
 ## Securing SYSCTL
 
-The `/etc/sysctl.conf` file is used to configure kernel parameters at runtime. By modifying specific parameters in the `/etc/sysctl.conf` file we can establish higher kernel level security in a Linux environment. Each parameter included in this example `/etc/sysctl.conf` is my personal recommendation, I implore that you to seek out each setting to get a better understanding of the possible values they can each be set to so you can create a customized configuration tailored to your server requirements. _These settings are catered to Ubuntu 20.08 LTS ARM with Docker._
+The `/etc/sysctl.conf` file is used to configure kernel parameters at runtime. By modifying specific parameters in the `/etc/sysctl.conf` file we can establish higher kernel-level security in a Linux environment. Each parameter included in this example `/etc/sysctl.conf` is my recommendation, I implore that you to seek out each setting to get a better understanding of the possible values they can each be set to so you can create a customized configuration tailored to your server requirements. _These settings are catered to Ubuntu 20.08 LTS ARM with Docker._
 
 The settings in `/etc/sysctl.conf` can:
 
@@ -518,7 +518,7 @@ net.ipv6.route.flush = 1
 
 ## Disabling IPv6
 
-IPv6 currently poses a huge attack surface to most existing machines that are internet connected. As such disabling IPv6 entirely is a suitable option in some cases. While entirely dependant on the purpose of the server, it is recommended to disable IPv6 communications unless they are vital to hosting.
+IPv6 currently poses a huge attack surface to most existing machines that are internet-connected. As such disabling IPv6 entirely is a suitable option in some cases. While entirely dependant on the purpose of the server, it is recommended to disable IPv6 communications unless they are vital to hosting.
 
 To disable IPv6 we first open the `/etc/sysctl.conf` file:
 
@@ -547,7 +547,7 @@ The following section will provide insight on the installation and configuration
 
 ## Update Automation (**unattended-upgrades**)
 
-Automatic security updates are important to ensure un-patched vulnerabilities are mitigated on a live server. While automatic upgrades can occasionally break things, I'd say its better to patch security holes with slightly more up-keep \_(the task is automated after all) then it is to stay overtly less secure.
+Automatic security updates are important to ensure un-patched vulnerabilities are mitigated on a live server. While automatic upgrades can occasionally break things, I'd say it's better to patch security holes with slightly more up-keep \_(the task is automated after all) than it is to stay overtly less secure.
 
 To keep the system up-to-date without admin intervention we will install [**unattended-upgrades**](https://wiki.debian.org/UnattendedUpgrades):
 
@@ -570,7 +570,7 @@ APT::Periodic::AutocleanInterval "7";
 APT::Periodic::Unattended-Upgrade "1";
 ```
 
-Now we need to configure unattended-upgrades to work properly. unattended-upgrades has many different configuration settings that I suggest you explore. For the purpose of this guide however, we will set up unattended-upgrades quite basically.
+Now we need to configure unattended upgrades to work properly. unattended-upgrades have many different configuration settings that I suggest you explore. For this guide, however, we will set up unattended-upgrades quite basically.
 
 Open `/etc/apt/apt.conf.d/50unattended-upgrades`:
 
@@ -591,7 +591,7 @@ Unattended-Upgrade::Allowed-Origins {
 
 > A **rootkit** is a collection of computer software, typically malicious, designed to enable access to a computer or an area of its software that is not otherwise allowed (for example, to an unauthorized user) and often masks its existence or the existence of other software. - [Wikipedia](https://en.wikipedia.org/wiki/Rootkit)
 
-Obviously, rootkits are not something we want. We can use [**rkhunter**](http://rkhunter.sourceforge.net/) & [**chkrootkit**](http://www.chkrootkit.org/) to detect if our system has been compromised.
+Rootkits are not something we want. We can use [**rkhunter**](http://rkhunter.sourceforge.net/) & [**chkrootkit**](http://www.chkrootkit.org/) to detect if our system has been compromised.
 
 By using these two tools we can quickly scan for rootkits!
 
@@ -599,13 +599,13 @@ By using these two tools we can quickly scan for rootkits!
 sudo apt-get install rkhunter chkrootkit
 ```
 
-First we'll run `chkrootkit`
+First, we'll run `chkrootkit`
 
 ```bash
 sudo chkrootkit
 ```
 
-Second we'll run `rkhunter`
+Second, we'll run `rkhunter`
 
 ```bash
 sudo rkhunter --update
@@ -644,7 +644,7 @@ sudo clamscan -r --remove /
 
 ## iptables Intrusion Detection & Prevention (**PSAD**)
 
-[PSAD](https://cipherdyne.org/psad/) is an intrusion prevention tool similar to **Fail2ban** however, while Fail2ban detects and blocks on a application level, **PSAD** blocks on an iptables level via log messages.
+[PSAD](https://cipherdyne.org/psad/) is an intrusion prevention tool similar to **Fail2ban** however, while Fail2ban detects and blocks on an application level, **PSAD** blocks on an iptables level via log messages.
 
 > "Fail2BAN scans log files of various applications such as apache, ssh or ftp and automatically bans IPs that show the malicious signs such as automated login attempts. PSAD on the other hand scans iptables and ip6tables log messages (typically /var/log/messages) to detect and optionally block scans and other types of suspect traffic such as DDoS or OS fingerprinting attempts. It's ok to use both programs at the same time because they operate on different level." - [FINESEC](https://serverfault.com/a/447604/289829)
 
@@ -688,7 +688,7 @@ sudo psad -H # (case sensitive)
 
 ## Application Intrusion Detection & Prevention (**Fail2Ban**)
 
-[Fail2ban](https://www.fail2ban.org/wiki/index.php/Main_Page) scans log files and bans IPs that show the malicious signs such as too many password failures, port scanning, searching for exploits, etc.
+[Fail2ban](https://www.fail2ban.org/wiki/index.php/Main_Page) scans log files and bans IPs that show malicious signs such as too many password failures, port scanning, searching for exploits, etc.
 
 > **NOTE**: Fail2ban comes well configured out of the box so the additional configuration steps are optional but recommended.
 
@@ -748,11 +748,11 @@ Add this line to `/etc/cron.daily/00logwatch`:
 
 # System Stability :triangular_ruler:
 
-Ensuring stability and longevity is the focus here. Ideally with email notifications setup on your server you will know of specific outages, intrusions, or any other major issues that might require an administrator's intervention. If you plan to regularly maintain the server manually then this section will include some relevant commands and information on how to do that.
+Ensuring stability and longevity is the focus here. Ideally, with email notifications set up on your server, you will know of specific outages, intrusions, or any other major issues that might require an administrator's intervention. If you plan to regularly maintain the server manually then this section will include some relevant commands and information on how to do that.
 
 ## Cleaning Installed Packages
 
-If unattended-upgrades is installed the following commands should run automatically given the configuration in this guide was used. Otherwise, these commands should be run from time to time to clean and unused packages from the server.
+If unattended upgrades is installed the following commands should run automatically given the configuration in this guide was used. Otherwise, these commands should be run from time to time to clean and unused packages from the server.
 
 Execute the following command to automatically remove and clean unused packages:
 
@@ -766,7 +766,7 @@ sudo apt-get autoremove && sudo apt-get autoclean
 
 **THIS SECTION AND THE SCRIPT ARE CURRENTLY W.I.P**
 
-This script is intended to act as an automation tool for this guide. As such I highly recommended you read through the guide before executing the script. This script is not meant to supplement the guide, or meant to be done as a final step. Instead this script IS the guide. Please only modify your system **AFTER RUNNING THE SCRIPT**.
+This script is intended to act as an automation tool for this guide. As such I highly recommended you read through the guide before executing the script. This script is not meant to supplement the guide or meant to be done as a final step. Instead, this script IS the guide. Please only modify your system **AFTER RUNNING THE SCRIPT**.
 
 The script cannot safely be 100% automated so prompts may appear to request user verification and outputs may display sensitive information for safe-keeping on other systems.
 
@@ -786,7 +786,7 @@ After the dust settles you should have a significantly more secure Linux server 
 
 > Why use this when there's "X"?
 
-You have freewill, I just provide the guide. If there is a better, more up to date, or more concise guide then feel free to link it for other users benefit. I created this guide to help collate my information and learn a little more about various security procedures.
+You have free will, I just provide the guide. If there is a better, more up-to-date, or more concise guide then feel free to link it for other user's benefit. I created this guide to help collate my information and learn a little more about various security procedures.
 
 > Who are you?
 
@@ -794,7 +794,7 @@ I'm [Remi Teeple](https://remi.works), a game and software developer from Ottawa
 
 > Why the name "Your First Minute On A Server"?
 
-YFMOAS was named such because I wanted to compete directly with the much popularized server setup phrase of "My First X On A Server". This is largely done as homage to other guides.
+YFMOAS was named such because I wanted to compete directly with the much-popularized server setup phrase of "My First X On A Server". This is largely done as an homage to other guides.
 
 > Do you have any additional resources?
 
@@ -814,7 +814,7 @@ These are the resources that I would normally frequent to get a system secure. P
 > | |
 > I found an issue with the guide.
 
-Please contact me immediately via [remi@teeple.xyz](mailto:remi@teeple.xyz). I am currently in the process of getting a better understanding of GitHub's core systems so I will likely allow contributors in the near future.
+Please contact me immediately via [remi@teeple.xyz](mailto:remi@teeple.xyz). I am currently in the process of getting a better understanding of GitHub's core systems so I will likely allow contributors in the future.
 
 > Something broke and I need help!
 
@@ -822,11 +822,11 @@ Please create an issue and describe your problem. I am one man and this is not m
 
 > Why did you make this?
 
-I made this as a reference for myself to quickly setup servers whenever I need one for a specific project.
+I made this as a reference for myself to quickly set up servers whenever I need one for a specific project.
 
 > Would this work on a Raspberry Pi?
 
-Yes! In fact majority of this guide was specifically created to cater to my needs when creating Raspberry Pi servers. I'd recommend using this [nifty little tool](https://github.com/Hexxeh/rpi-update) to ensure that you RPI stays up to date firmware wise! Alternatively (and arguable a much safer method for updating firmware) is to use the same tool pre-install from a Raspberry PI OS image. I suggest you keep a Micro SD card kicking around loaded with Raspberry PI OS for this specific reason.
+Yes! The majority of this guide was specifically created to cater to my needs when creating Raspberry Pi servers. I'd recommend using this [nifty little tool](https://github.com/Hexxeh/rpi-update) to ensure that your RPI stays up to date firmware-wise! Alternatively (and arguable a much safer method for updating the firmware) is to use the same tool pre-install from a Raspberry PI OS image. I suggest you keep a Micro SD card kicking around loaded with Raspberry PI OS for this specific reason.
 
 Have more questions? Feel free to ask!
 
